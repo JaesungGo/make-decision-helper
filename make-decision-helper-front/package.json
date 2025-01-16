@@ -20,7 +20,8 @@
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vue3-google-map": "^0.21.1",
-    "vuetify": "^3.7.6"
+    "vuetify": "^3.7.6",
+    "axios":"1.7.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

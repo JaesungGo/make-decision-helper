@@ -4,9 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cbbfb36e-3d96-4a1a-909d-37a9b849279e" name="Changes" comment="Chore: 프론트 프로젝트 초기화">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
+    <list default="true" id="cbbfb36e-3d96-4a1a-909d-37a9b849279e" name="Changes" comment="Chore: 젠킨스 설정 변경 (gradlew 실행 권한 및 디렉터리 변경)">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-front/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-front/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-front/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-front/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,6 +22,18 @@
       <ProjectState />
     </projectState>
   </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <projects_view>
+          <tree_state>
+            <expand />
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -28,6 +44,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="KubernetesApiProvider"><![CDATA[{
+  "isMigrated": true
+}]]></component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
@@ -36,6 +55,7 @@
   &quot;associatedIndex&quot;: 8
 }</component>
   <component name="ProjectId" id="2rhY3ksjTTmejCLLZfWxrsjNSiO" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
@@ -46,14 +66,17 @@
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "WebServerToolWindowFactoryState": "false",
     "android.gradle.sync.needed": "true",
-    "git-widget-placeholder": "BE-feature-chat",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/USER/Desktop/make-decision-helper",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.poratu.idea.plugins.tomcat.setting.TomcatServersConfigurable",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings",
     "ts.external.directory.path": "C:\\Program Files\\JetBrains\\IntelliJ IDEA 2023.2.5\\plugins\\javascript-impl\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
@@ -62,6 +85,39 @@
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\USER\Desktop\make-decision-helper\make-decision-helper-front\make-decision-helper-front" />
     </key>
+  </component>
+  <component name="RunManager" selected="Docker.docker-compose.yml.jenkins: Compose Deployment">
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml" />
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml.jenkins: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="jenkins" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.docker-compose.yml.jenkins: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -74,6 +130,9 @@
       <workItem from="1737012581115" duration="70000" />
       <workItem from="1737012893685" duration="367000" />
       <workItem from="1737013320811" duration="2213000" />
+      <workItem from="1737017737688" duration="597000" />
+      <workItem from="1737022310595" duration="618000" />
+      <workItem from="1737023748292" duration="1092000" />
     </task>
     <task id="LOCAL-00001" summary="Chore: 도커,젠킨스 설정파일 추가">
       <option name="closed" value="true" />
@@ -99,15 +158,36 @@
       <option name="project" value="LOCAL" />
       <updated>1737015905330</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Chore: 젠킨스 설정 수정 (gradlew 실행 권한)">
+      <option name="closed" value="true" />
+      <created>1737022400664</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1737022400664</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Chore: 젠킨스 설정 변경 (gradlew 실행 권한 및 디렉터리 변경)">
+      <option name="closed" value="true" />
+      <created>1737022650736</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1737022650736</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/make-decision-helper-back" />
+    </ignored-roots>
     <MESSAGE value="Chore: 도커,젠킨스 설정파일 추가" />
     <MESSAGE value="Chore: 프론트 프로젝트 초기화" />
-    <option name="LAST_COMMIT_MESSAGE" value="Chore: 프론트 프로젝트 초기화" />
+    <MESSAGE value="Chore: 젠킨스 설정 수정 (gradlew 실행 권한)" />
+    <MESSAGE value="Chore: 젠킨스 설정 변경 (gradlew 실행 권한 및 디렉터리 변경)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Chore: 젠킨스 설정 변경 (gradlew 실행 권한 및 디렉터리 변경)" />
   </component>
 </project>
