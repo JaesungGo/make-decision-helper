@@ -24,8 +24,13 @@ pipeline {
         stage('Frontend Build') {
             steps {
                 dir('make-decision-helper-front') {
-                    sh 'npm install'
-                    sh 'npm run build'
+                    sh '''
+                            node -v
+                            npm -v
+                            npm ci  # npm install 대신 ci 사용
+                            npm run build
+
+                    '''
                 }
             }
         }

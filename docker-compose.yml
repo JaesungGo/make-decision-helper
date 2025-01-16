@@ -15,6 +15,8 @@ services:
       sh -c "
         apt-get update && 
         apt-get install -y openjdk-17-jdk && 
+        curl -fsSL https://deb.nodesource.com/setup_18.x | bash - &&
+        apt-get install -y nodejs &&
         jenkins-plugin-cli --plugins workflow-aggregator && 
         /usr/local/bin/jenkins.sh
       "
