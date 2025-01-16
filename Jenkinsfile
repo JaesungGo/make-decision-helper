@@ -22,14 +22,17 @@ pipeline {
         }
 
         stage('Frontend Build') {
+            agent {
+                docker {
+                    image 'node:18'
+                    reuseNode true
+                }
+            }
             steps {
                 dir('make-decision-helper-front') {
                     sh '''
-                            node -v
-                            npm -v
-                            npm ci  # npm install 대신 ci 사용
-                            npm run build
-
+                        npm ci
+                        npm run build
                     '''
                 }
             }
