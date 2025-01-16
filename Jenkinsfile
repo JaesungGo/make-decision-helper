@@ -14,7 +14,8 @@ pipeline {
 
         stage('Backend Build') {
             steps {
-                dir('backend') {
+                dir('make-decision-helper-back') {
+                    sh 'chmod +x gradlew'
                     sh './gradlew clean build'
                 }
             }
@@ -22,7 +23,7 @@ pipeline {
 
         stage('Frontend Build') {
             steps {
-                dir('frontend') {
+                dir('make-decision-helper-front') {
                     sh 'npm install'
                     sh 'npm run build'
                 }
