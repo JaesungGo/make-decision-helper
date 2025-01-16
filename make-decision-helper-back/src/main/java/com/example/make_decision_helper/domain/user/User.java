@@ -26,7 +26,7 @@ public class User {
     private String nickname;
 
     @OneToMany(mappedBy = "host")
-    private List<ChatRoom> hostedRooms = new ArrayList<>();
+    private final List<ChatRoom> hostedRooms = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private UserRole role;

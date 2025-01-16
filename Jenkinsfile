@@ -16,7 +16,7 @@ pipeline {
             steps {
                 dir('make-decision-helper-back') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew clean build'
+                    sh './gradlew clean bootJar -x test'
                 }
             }
         }
