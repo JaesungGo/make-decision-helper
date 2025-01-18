@@ -1,5 +1,8 @@
 package com.example.make_decision_helper.util.jwt;
 
+import com.example.make_decision_helper.domain.chatroom.ChatRoom;
+import com.example.make_decision_helper.domain.chatuser.ChatUser;
+import com.example.make_decision_helper.domain.user.User;
 import com.example.make_decision_helper.domain.user.UserRole;
 import com.example.make_decision_helper.util.cookie.CookieUtil;
 import io.jsonwebtoken.Claims;
@@ -15,6 +18,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseCookie;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -68,7 +72,7 @@ class JwtTokenProviderTest {
 
         //given
         ResponseCookie testCookie = ResponseCookie.from("token", "value").build();
-        when(cookieUtil.createCookie(anyString(),anyString(),anyLong())).thenReturn(testCookie);
+        when(CookieUtil.createCookie(anyString(),anyString(),anyLong())).thenReturn(testCookie);
 
         //when
         Map<String, ResponseCookie> testCookiesWithToken = jwtTokenProvider.createTokenAndCookies(TEST_EMAIL, TEST_ROLE);
@@ -136,6 +140,32 @@ class JwtTokenProviderTest {
         //when, then
         assertTrue(jwtTokenProvider.validateToken(testToken));
 
+    }
+
+    @Test
+    @DisplayName("Guest용 토큰 발급 테스트")
+    void createGuestTokenText(){
+        //given
+        Long roomId = 1L;
+        String nickname = "testUser";
+        String guestId = String.format("GUEST_%d_%s", 1L, "testUser");
+
+
+        //when
+        String guestToken = jwtTokenProvider.createGuestToken(guestId, roomId,nickname);
+
+        //then
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Base64.getEncoder().encodeToString(SECRET_KEY.getBytes()))
+                .build()
+                .parseClaimsJws(guestToken)
+                .getBody();
+
+        assertAll(
+                ()-> assertEquals(guestId, claims.getSubject()),
+                ()-> assertEquals(roomId, claims.get("roomId", Long.class)),
+                ()-> assertEquals(nickname, claims.get("nickname",String.class))
+        );
     }
 
     private String createTestToken(String email, UserRole role) {
