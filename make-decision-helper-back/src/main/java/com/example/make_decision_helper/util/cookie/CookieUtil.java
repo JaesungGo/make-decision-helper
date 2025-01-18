@@ -18,7 +18,7 @@ public class CookieUtil {
      * @param maxAge 쿠키 만료 시간 (초단위)
      * @return 생성된 쿠키 객체
      */
-    public ResponseCookie createCookie(String name, String value, Long maxAge){
+    public static ResponseCookie createCookie(String name, String value, Long maxAge){
         return ResponseCookie.from(name,value)
                 .path("/")
                 .secure(true)
@@ -34,7 +34,7 @@ public class CookieUtil {
      * @param name 쿠키 이름
      * @return 쿠키 값, 없으면 null
      */
-    public String getCookieValue(HttpServletRequest request, String name){
+    public static String getCookieValue(HttpServletRequest request, String name){
         Cookie[] cookies = request.getCookies();
         if(cookies != null){
             for(Cookie cookie : cookies){
@@ -51,7 +51,7 @@ public class CookieUtil {
      * @param
      * @return 기간 만료된 쿠키 객체 Map<String, ResponseCookie></>
      */
-    public Map<String, ResponseCookie> createLogoutCookie(){
+    public static Map<String, ResponseCookie> createLogoutCookie(){
         Map<String,ResponseCookie> cookies = new HashMap<>();
         cookies.put("accessToken",createCookie("accessToken","",0L));
         cookies.put("refreshToken",createCookie("refreshToken","",0L));

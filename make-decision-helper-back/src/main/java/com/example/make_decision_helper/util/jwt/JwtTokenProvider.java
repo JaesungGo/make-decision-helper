@@ -18,6 +18,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -217,6 +218,30 @@ public class JwtTokenProvider {
      */
     public boolean isTokenBlacklisted(String token, String tokenType) {
         return Boolean.TRUE.equals(redisTemplate.hasKey("BlackList:" + tokenType + ":" + token));
+    }
+
+    /**
+     * 웹소켓 인증에 필요한 게스트용 JWT 토큰 발급
+     * @param guestId
+     * @param roomId
+     * @param nickname
+     * @return
+     */
+    public String createGuestToken(String guestId, Long roomId, String nickname){
+        Claims claims = Jwts.claims().setSubject(guestId);
+        claims.put("roomId", roomId);
+        claims.put("nickname", nickname);
+        claims.put("role", UserRole.GUEST.name());
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + accessTokenVal);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
     }
 
 }
