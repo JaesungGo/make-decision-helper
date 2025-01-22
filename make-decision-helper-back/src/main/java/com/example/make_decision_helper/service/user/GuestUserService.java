@@ -15,13 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Transactional
 @Slf4j @RequiredArgsConstructor
 public class GuestUserService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
-    private final ChatRoomRepository chatRoomRepository;
 
     /**
      * 게스트 토큰 생성 및 Redis에 임시 저장
@@ -29,13 +27,14 @@ public class GuestUserService {
      * @param nickname
      * @return
      */
+    @Transactional
     public String guestToken(ChatRoom chatRoom, String nickname){
 
         Long roomId = chatRoom.getId();
-        String guestId = String.format("GUEST_%d_s", roomId, nickname);
+        String guestId = String.format("GUEST_%d_%s", roomId, nickname);
 
 
-        String guestKey = String.format("roomId:%:nickname:%s", roomId, nickname);
+        String guestKey = String.format("roomId:%d:nickname:%s", roomId, nickname);
         Boolean isKeyExists = redisTemplate.hasKey(guestKey);
         if(isKeyExists ||  isNicknameExist(chatRoom,nickname) ){
             throw new InvalidRequestStateException("이미 사용중인 닉네임입니다");

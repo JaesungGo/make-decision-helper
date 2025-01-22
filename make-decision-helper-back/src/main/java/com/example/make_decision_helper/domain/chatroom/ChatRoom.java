@@ -17,19 +17,20 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ChatRoom {
-    @Id
+    @Id @Column(name = "chat_room_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String title;
 
-    @Column(unique = true, nullable = false)
-    private String inviteCode;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User host;
+    private User hostUser;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "invite_code_id", nullable = false)
+    private InviteCode inviteCode;
 
     @Column(nullable = false)
     private int maxParticipants;
@@ -37,7 +38,8 @@ public class ChatRoom {
     @Column(nullable = false)
     private LocalDateTime expirationTime;
 
-    private String postTemplate;
+    @Enumerated(EnumType.STRING)
+    private RoomStatus roomStatus;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -45,15 +47,34 @@ public class ChatRoom {
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChatUser> participants = new ArrayList<>();
 
+
+    public enum RoomStatus{
+        ACTIVE, EXPIRED, CLOSED
+    }
+
     @Builder
-    public ChatRoom(User host, String title, String inviteCode, int maxParticipants,
-                    LocalDateTime expirationTime, String postTemplate) {
-        this.host = host;
+    public ChatRoom(Long id, String title, User hostUser, InviteCode inviteCode, int maxParticipants, LocalDateTime expirationTime, RoomStatus roomStatus, boolean active, List<ChatUser> participants) {
+        this.id = id;
         this.title = title;
+        this.hostUser = hostUser;
         this.inviteCode = inviteCode;
         this.maxParticipants = maxParticipants;
         this.expirationTime = expirationTime;
-        this.postTemplate = postTemplate;
+        this.roomStatus = roomStatus;
+        this.active = active;
+        this.participants = participants;
     }
 
+    /**
+     * 채팅방 만료시간 설정 (현재시간 + duration)
+     * @param duration
+     * @return 만료 시간에 해당하는 LocalDateTime (ex. 2024-10-31-30)
+     */
+    public static LocalDateTime setExpirationFromDuration(Integer duration) {
+        return LocalDateTime.now().plusMinutes(duration);
+    }
+
+    public void changeRoomStatus(RoomStatus roomStatus){
+        this.roomStatus = roomStatus;
+    }
 }

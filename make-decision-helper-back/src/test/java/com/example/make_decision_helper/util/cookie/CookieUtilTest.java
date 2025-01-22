@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 
 import java.util.Map;
@@ -17,12 +18,6 @@ import static org.mockito.Mockito.*;
 @DisplayName("CookieUtil 관련 테스트")
 class CookieUtilTest {
 
-    private CookieUtil cookieUtil;
-
-    @BeforeEach
-    void beforeEach(){
-        cookieUtil = new CookieUtil();
-    }
 
     @Test
     @DisplayName("쿠키 생성 테스트")
@@ -35,7 +30,7 @@ class CookieUtilTest {
 
 
         //when
-        ResponseCookie createdCookie = cookieUtil.createCookie(name, value, maxAge);
+        ResponseCookie createdCookie = CookieUtil.createCookie(name, value, maxAge);
 
         //then
         assertAll(
@@ -55,11 +50,12 @@ class CookieUtilTest {
         //given
         HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
         Cookie testCookie = new Cookie("testCookie", "testValue");
+        HttpHeaders httpHeaders = new HttpHeaders();
 //      Cookie[] cookies = new Cookie[]{testCookie};
         when(httpServletRequest.getCookies()).thenReturn(new Cookie[]{testCookie});
 
         //when
-        String testCookieValue = cookieUtil.getCookieValue(httpServletRequest, "testCookie");
+        String testCookieValue = CookieUtil.getCookieValue(httpServletRequest, "testCookie");
 
         //then
         assertEquals("testValue", testCookieValue);
@@ -76,7 +72,7 @@ class CookieUtilTest {
         //given
         
         //when
-        Map<String, ResponseCookie> deleteCookies = cookieUtil.createLogoutCookie();
+        Map<String, ResponseCookie> deleteCookies = CookieUtil.createLogoutCookie();
 
         //then
         assertAll(

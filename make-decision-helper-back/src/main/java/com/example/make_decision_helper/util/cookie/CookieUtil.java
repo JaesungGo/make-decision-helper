@@ -2,11 +2,11 @@ package com.example.make_decision_helper.util.cookie;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class CookieUtil {
@@ -57,4 +57,45 @@ public class CookieUtil {
         cookies.put("refreshToken",createCookie("refreshToken","",0L));
         return cookies;
     }
+
+
+    /**
+     * 웹소켓 헤더이서 쿠키 추출하는 클래스
+     * @param headers
+     * @param cookieName
+     * @return
+     */
+    public static String extractTokenFromWebSocketCookie(Map<String, List<String>> headers, String cookieName) {
+        List<String> cookies = headers.get("cookie");  // STOMP에서는 소문자 "cookie"로 전달됨
+        if (cookies == null || cookies.isEmpty()) return null;
+
+        // STOMP 헤더는 List 형태로 전달되므로, 첫 번째 요소를 사용
+        String cookieString = cookies.get(0);
+
+        // 쿠키 문자열 파싱
+        String[] cookiePairs = cookieString.split("; ");
+        for (String cookiePair : cookiePairs) {
+            String[] keyValue = cookiePair.split("=");
+            if (keyValue.length == 2 && cookieName.equals(keyValue[0])) {
+                return keyValue[1];
+            }
+        }
+        return null;
+    }
+
+//    /**
+//     * 서블릿 request를 HttpHeaders객체로 사용
+//     * @param request
+//     * @param httpHeaders
+//     */
+//    public static void servletRequestToHttpHeaders(HttpServletRequest request, HttpHeaders httpHeaders) {
+//        Enumeration<String> headerNames = request.getHeaderNames();
+//        while (headerNames.hasMoreElements()) {
+//            String headerName = headerNames.nextElement();
+//            String headerValue = request.getHeader(headerName);
+//            httpHeaders.add(headerName, headerValue);
+//        }
+//    }
+
+
 }

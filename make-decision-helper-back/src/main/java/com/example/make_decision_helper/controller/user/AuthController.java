@@ -62,9 +62,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest httpServletRequest ,String cookie) {
         try{
-            String token = cookieUtil.getCookieValue(request,"accessToken");
+            String token = CookieUtil.getCookieValue(httpServletRequest,"accessToken");
 
             if(token == null) {
                 return ResponseEntity.badRequest()
@@ -87,8 +87,8 @@ public class AuthController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<ApiResponse<Void>> reissue(HttpServletRequest request) {
-        String refreshToken = cookieUtil.getCookieValue(request, "refreshToken");
+    public ResponseEntity<ApiResponse<Void>> reissue(HttpServletRequest httpServletRequest) {
+        String refreshToken = CookieUtil.getCookieValue(httpServletRequest, "refreshToken");
 
         if (refreshToken == null) {
             return ResponseEntity.badRequest()

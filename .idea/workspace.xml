@@ -5,10 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cbbfb36e-3d96-4a1a-909d-37a9b849279e" name="Changes" comment="Chore: 프론트 프로젝트 초기화">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/make-decision-helper-front/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-front/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/make-decision-helper-front/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-front/package.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/config/security/WebSocketConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/controller/chat/ChatRoomController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/ChatRoom.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/ChatRoom.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/dto/CreateRoomRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/dto/CreateRoomRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/dto/JoinRoomRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/dto/JoinRoomRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/dto/RoomResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatroom/dto/RoomResponse.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatuser/ChatUser.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/domain/chatuser/ChatUser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/repository/chatroom/ChatRoomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/repository/chatroom/ChatRoomRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/repository/chatuser/ChatUserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/repository/chatuser/ChatUserRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/service/chatroom/ChatRoomService.java" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/src/main/java/com/example/make_decision_helper/service/chatroom/ChatRoomService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +68,7 @@
     "SONARLINT_PRECOMMIT_ANALYSIS": "true",
     "WebServerToolWindowFactoryState": "false",
     "android.gradle.sync.needed": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "BE-feature-chat",
     "last_opened_file_path": "C:/Users/USER/Desktop/make-decision-helper",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -89,6 +96,7 @@
       <workItem from="1737012581115" duration="70000" />
       <workItem from="1737012893685" duration="367000" />
       <workItem from="1737013320811" duration="2213000" />
+      <workItem from="1737189292335" duration="520000" />
     </task>
     <task id="LOCAL-00001" summary="Chore: 도커,젠킨스 설정파일 추가">
       <option name="closed" value="true" />

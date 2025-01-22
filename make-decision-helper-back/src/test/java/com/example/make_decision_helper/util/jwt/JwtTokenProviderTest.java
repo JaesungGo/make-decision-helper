@@ -27,17 +27,13 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @DisplayName("JWT 토큰 관련 테스트")
 class JwtTokenProviderTest {
 
     @Mock
     private RedisTemplate<String, String> redisTemplate;
-
-    @Mock
-    private CookieUtil cookieUtil;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -72,22 +68,25 @@ class JwtTokenProviderTest {
 
         //given
         ResponseCookie testCookie = ResponseCookie.from("token", "value").build();
-        when(CookieUtil.createCookie(anyString(),anyString(),anyLong())).thenReturn(testCookie);
+        try (MockedStatic<CookieUtil> cookieUtil = mockStatic(CookieUtil.class)) {
+            cookieUtil.when(() -> CookieUtil.createCookie(anyString(), anyString(), anyLong()))
+                    .thenReturn(testCookie);
 
-        //when
-        Map<String, ResponseCookie> testCookiesWithToken = jwtTokenProvider.createTokenAndCookies(TEST_EMAIL, TEST_ROLE);
+            //when
+            Map<String, ResponseCookie> testCookiesWithToken = jwtTokenProvider.createTokenAndCookies(TEST_EMAIL, TEST_ROLE);
 
-        //then
-        assertAll(
-                () -> assertTrue(testCookiesWithToken.containsKey("accessToken")),
-                () -> assertTrue(testCookiesWithToken.containsKey("refreshToken")),
-                () -> verify(valueOperations).set(
-                        argThat(key -> key.startsWith("RefreshToken:")),
-                        anyString(),
-                        eq(REFRESH_TOKEN_EXPIRATION),
-                        eq(TimeUnit.MILLISECONDS)
-                )
-        );
+            //then
+            assertAll(
+                    () -> assertTrue(testCookiesWithToken.containsKey("accessToken")),
+                    () -> assertTrue(testCookiesWithToken.containsKey("refreshToken")),
+                    () -> verify(valueOperations).set(
+                            argThat(key -> key.startsWith("RefreshToken:")),
+                            anyString(),
+                            eq(REFRESH_TOKEN_EXPIRATION),
+                            eq(TimeUnit.MILLISECONDS)
+                    )
+            );
+        }
     }
 
 //    @Test

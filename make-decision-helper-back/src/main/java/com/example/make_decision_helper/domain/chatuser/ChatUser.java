@@ -4,6 +4,7 @@ import com.example.make_decision_helper.domain.chatroom.ChatRoom;
 import com.example.make_decision_helper.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,7 +30,7 @@ public class ChatUser {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;  // 게스트는 null
+    private User user;
 
     @Column(nullable = false)
     private String nickname;
@@ -41,11 +42,17 @@ public class ChatUser {
     @Column(nullable = false)
     private LocalDateTime joinedAt;
 
+    @PrePersist
+    protected  void onCreate(){
+        this.joinedAt = LocalDateTime.now();
+    }
+
     // 로그인 사용자용 생성자
-    public ChatUser(ChatRoom chatRoom, User user, ChatUserType type) {
+    @Builder
+    public ChatUser(ChatRoom chatRoom, User user, String nickname, ChatUserType type) {
         this.chatRoom = chatRoom;
         this.user = user;
-        this.nickname = user.getNickname();
+        this.nickname = nickname;
         this.type = type;
         this.joinedAt = LocalDateTime.now();
     }

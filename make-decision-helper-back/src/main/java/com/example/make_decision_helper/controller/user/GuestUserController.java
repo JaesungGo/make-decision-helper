@@ -1,6 +1,7 @@
 package com.example.make_decision_helper.controller.user;
 
 import com.example.make_decision_helper.domain.chatroom.ChatRoom;
+import com.example.make_decision_helper.domain.chatroom.InviteCode;
 import com.example.make_decision_helper.domain.chatroom.dto.GuestJoinRequest;
 import com.example.make_decision_helper.domain.chatroom.dto.GuestJoinResponse;
 import com.example.make_decision_helper.service.chatroom.ChatRoomService;
@@ -38,6 +39,7 @@ public class GuestUserController {
     public ResponseEntity<ApiResponse<GuestJoinResponse>> createGuestCookie(@Valid @RequestBody GuestJoinRequest request){
 
         try {
+
             ChatRoom findRoomByInviteCode = chatRoomService.findRoomByInviteCode(request.getInviteCode());
             String guestToken = guestUserService.guestToken(findRoomByInviteCode, request.getNickname());
 

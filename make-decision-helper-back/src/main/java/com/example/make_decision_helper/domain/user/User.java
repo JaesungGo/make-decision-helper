@@ -22,10 +22,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String nickname;
-
-    @OneToMany(mappedBy = "host")
+    @OneToMany(mappedBy = "hostUser")
     private final List<ChatRoom> hostedRooms = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
@@ -65,7 +62,6 @@ public class User {
                 .id(this.id)
                 .email(this.email)
                 .password(this.password)
-                .nickname(this.nickname)
                 .role(this.role)
                 .status(Status.ACTIVE)
                 .createdAt(this.createdAt)
@@ -79,7 +75,6 @@ public class User {
                 .id(this.id)
                 .email(this.email)
                 .password(this.password)
-                .nickname(this.nickname)
                 .role(this.role)
                 .status(Status.INAVTIVE)
                 .createdAt(this.createdAt)
