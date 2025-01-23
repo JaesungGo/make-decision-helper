@@ -28,7 +28,7 @@ public class GuestUserService {
      * @return
      */
     @Transactional
-    public String guestToken(ChatRoom chatRoom, String nickname){
+    public String createGuestToken(ChatRoom chatRoom, String nickname){
 
         Long roomId = chatRoom.getId();
         String guestId = String.format("GUEST_%d_%s", roomId, nickname);

@@ -44,7 +44,9 @@ public class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/**").authenticated()
+                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/ws-stomp/**").permitAll()
+                        .requestMatchers("/api/v1/rooms/join").permitAll()
                         .anyRequest().authenticated()
                 )
 

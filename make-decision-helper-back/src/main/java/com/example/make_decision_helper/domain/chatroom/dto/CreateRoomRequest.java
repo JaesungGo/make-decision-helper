@@ -1,20 +1,29 @@
 package com.example.make_decision_helper.domain.chatroom.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
 
-import java.time.Duration;
 
-@Data
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class CreateRoomRequest {
 
-    @NotNull
+    @NotBlank(message = "방 제목은 필수입니다")
     private String roomName;
 
-    @NotNull
-    private Integer maxParticipants;
+    @NotNull(message = "최대 참여 인원은 필수입니다")
+    private int maxParticipants;
 
-    @NotNull
-    private Integer duration;
+    @NotNull(message = "방 유지 시간은 필수입니다")
+    private int duration;
+
+    @NotBlank(message = "닉네임은 필수입니다")
+    private String nickname;
 
 }

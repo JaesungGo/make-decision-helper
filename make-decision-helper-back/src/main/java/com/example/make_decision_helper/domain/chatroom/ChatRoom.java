@@ -28,7 +28,7 @@ public class ChatRoom {
     @JoinColumn(name = "user_id", nullable = false)
     private User hostUser;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "invite_code_id", nullable = false)
     private InviteCode inviteCode;
 
@@ -62,7 +62,6 @@ public class ChatRoom {
         this.expirationTime = expirationTime;
         this.roomStatus = roomStatus;
         this.active = active;
-        this.participants = participants;
     }
 
     /**
@@ -74,7 +73,18 @@ public class ChatRoom {
         return LocalDateTime.now().plusMinutes(duration);
     }
 
+    public void addChatUser(ChatUser chatUser){
+        participants.add(chatUser);
+        chatUser.setChatRoom(this);
+    }
+
+    public void setInviteCode(InviteCode inviteCode){
+        this.inviteCode = inviteCode;
+        inviteCode.setChatRoom(this);
+    }
+
     public void changeRoomStatus(RoomStatus roomStatus){
         this.roomStatus = roomStatus;
     }
+    
 }

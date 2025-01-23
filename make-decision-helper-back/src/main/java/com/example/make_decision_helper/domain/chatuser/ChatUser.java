@@ -25,8 +25,8 @@ public class ChatUser {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
+    @JoinColumn(name = "chat_room_id")
+    ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -47,14 +47,17 @@ public class ChatUser {
         this.joinedAt = LocalDateTime.now();
     }
 
-    // 로그인 사용자용 생성자
     @Builder
-    public ChatUser(ChatRoom chatRoom, User user, String nickname, ChatUserType type) {
-        this.chatRoom = chatRoom;
+    public ChatUser(Long id, ChatRoom chatRoom, User user, String nickname, ChatUserType type) {
+        this.id = id;
         this.user = user;
         this.nickname = nickname;
         this.type = type;
-        this.joinedAt = LocalDateTime.now();
+        this.chatRoom = chatRoom;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
     }
 
     // 게스트용 생성자
