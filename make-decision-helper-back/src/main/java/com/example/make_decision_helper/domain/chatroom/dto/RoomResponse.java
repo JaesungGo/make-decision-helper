@@ -4,20 +4,42 @@ import com.example.make_decision_helper.domain.chatroom.ChatRoom;
 import com.example.make_decision_helper.domain.chatroom.InviteCode;
 import com.example.make_decision_helper.domain.chatuser.ChatUser;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Data @Builder
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class RoomResponse {
-
+    private Long roomId;
+    private String title;
     private String inviteCode;
     private String hostNickName;
     private int maxParticipants;
     private int currentParticipants;
     private LocalDateTime expiration;
-    private ChatRoom.RoomStatus status;
-    private List<ChatUser> chatUsers;
+    private String status;
+    private List<ChatUserDto> participants;
 
+    public static RoomResponse from(ChatRoom chatRoom, ChatUser currentUser, InviteCode inviteCode) {
+        return RoomResponse.builder()
+                .roomId(chatRoom.getId())
+                .title(chatRoom.getTitle())
+                .inviteCode(inviteCode.getInviteCode())
+                .hostNickName(currentUser.getNickname())
+                .maxParticipants(chatRoom.getMaxParticipants())
+                .currentParticipants(chatRoom.getParticipants().size())
+                .expiration(chatRoom.getExpirationTime())
+                .status(chatRoom.getRoomStatus().name())
+                .participants(chatRoom.getParticipants().stream()
+                        .map(ChatUserDto::from)
+                        .collect(Collectors.toList()))
+                .build();
+    }
 }

@@ -6,21 +6,22 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "invite_codes")
-@Getter @Builder
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class InviteCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(mappedBy = "inviteCode", cascade = CascadeType.ALL)
-    private ChatRoom chatRoom;
+    @OneToOne(mappedBy = "inviteCode")
+    ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "create_user_id", nullable = false)
@@ -32,4 +33,16 @@ public class InviteCode {
     @Transient
     private LocalDateTime expirationTime;
 
+    @Builder
+    public InviteCode(Long id, ChatRoom chatRoom, User creatUser, String inviteCode, LocalDateTime expirationTime) {
+        this.id = id;
+        this.creatUser = creatUser;
+        this.inviteCode = inviteCode;
+        this.expirationTime = expirationTime;
+        this.chatRoom = chatRoom;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom){
+        this.chatRoom = chatRoom;
+    }
 }
