@@ -61,9 +61,14 @@ public class ChatRoomController {
 
 
     @DeleteMapping("/{roomId}/leave")
-    public ResponseEntity<ApiResponse<Void>> exitRoom(@PathVariable Long roomId){
-
-        return null;
+    public ResponseEntity<ApiResponse<Void>> exitRoom(@PathVariable Long roomId, @AuthenticationPrincipal UserDetails userDetails){
+        try{
+            String userEmail = userDetails.getUsername();
+            chatRoomService.leaveRoom(roomId,userEmail);
+            return ResponseEntity.ok().body(ApiResponse.success(null));
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        }
     }
 
     @GetMapping("/{roomId}")

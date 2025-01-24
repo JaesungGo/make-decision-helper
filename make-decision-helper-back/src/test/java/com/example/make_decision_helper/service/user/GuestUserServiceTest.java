@@ -69,7 +69,7 @@ class GuestUserServiceTest {
                 .thenReturn(expectedToken);
 
         // when
-        String resultToken = guestUserService.guestToken(chatRoom, nickname);
+        String resultToken = guestUserService.createGuestToken(chatRoom, nickname);
 
         // then
         assertEquals(expectedToken, resultToken);
@@ -86,7 +86,7 @@ class GuestUserServiceTest {
 
         // when then
         assertThrows(InvalidRequestStateException.class,
-                () -> guestUserService.guestToken(chatRoom, nickname),"이미 사용중인 닉네임입니다");
+                () -> guestUserService.createGuestToken(chatRoom, nickname),"이미 사용중인 닉네임입니다");
 
         verify(jwtTokenProvider, never()).createGuestToken(anyString(),any(),anyString());
         verify(valueOperations, never()).set(anyString(),anyString(),anyLong(),any());
@@ -106,7 +106,7 @@ class GuestUserServiceTest {
 
         // when
         assertThrows(InvalidRequestStateException.class,
-                ()-> guestUserService.guestToken(chatRoom,nickname),"이미 사용중인 닉네임입니다");
+                ()-> guestUserService.createGuestToken(chatRoom,nickname),"이미 사용중인 닉네임입니다");
 
         verify(jwtTokenProvider, never()).createGuestToken(anyString(),anyLong(),anyString());
         verify(valueOperations, never()).set(anyString(),anyString(),anyLong(),any());

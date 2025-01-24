@@ -1,4 +1,4 @@
-package com.example.make_decision_helper.config.security;
+package com.example.make_decision_helper.config.websocket;
 
 import com.example.make_decision_helper.domain.user.UserRole;
 import com.example.make_decision_helper.util.cookie.CookieUtil;
@@ -10,23 +10,50 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.config.ChannelRegistration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 import java.util.List;
 import java.util.Map;
 
-@Configuration
 @RequiredArgsConstructor
-public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, String> redisTemplate;
+
+    /**
+     * 메시지 브로커 활성화 설정 "/sub","pub" 클라이언트->서버의 접두사 "/app"
+     * @param config
+     */
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/sub");
+        config.setApplicationDestinationPrefixes("/pub");
+        config.setUserDestinationPrefix("/user");
+    }
+
+
+
+    /**
+     * STOMP 프로토콜을 사용하여 웹소켓 사용을 위한 종단점 등록 "/ws-stomp"
+     * @param registry
+     */
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/ws-stomp")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
+    }
 
     /**
      * 들어오는 STOMP 메시지에 대한 처리
@@ -87,4 +114,5 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
             }
         }
     }
+
 }
