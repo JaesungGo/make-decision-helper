@@ -7,7 +7,7 @@ class SocketService {
     this.connected = false
   }
 
-  connect(roomId, onMessageReceived, onReactionReceived) {
+  connect(roomId, onMessageReceived) {
     const socket = new SockJS(import.meta.env.VITE_API_BASE_URL + '/ws-stomp')
     this.stompClient = new Client({
       webSocketFactory: () => socket,
@@ -19,22 +19,17 @@ class SocketService {
       },
       onConnect: () => {
         this.connected = true
-        
+
         this.stompClient.subscribe(`/sub/chat/room/${roomId}`, (message) => {
           const receivedMessage = JSON.parse(message.body)
           onMessageReceived(receivedMessage)
-        })
-  
-        this.stompClient.subscribe(`/sub/chat/room/${roomId}/reaction`, (reaction) => {
-          const receivedReaction = JSON.parse(reaction.body)
-          onReactionReceived(receivedReaction)
         })
       },
       onDisconnect: () => {
         this.connected = false
       }
     })
-  
+
     this.stompClient.activate()
   }
 
@@ -45,29 +40,14 @@ class SocketService {
     }
   }
 
-  sendMessage(roomId, message) {
+  sendMessage(roomId, content) {
     if (!this.connected) return
 
     this.stompClient.publish({
       destination: '/pub/chat/message',
       body: JSON.stringify({
         roomId,
-        content: message.content,
-        type: message.type,
-        messageId: message.messageId
-      })
-    })
-  }
-
-  sendReaction(roomId, reaction) {
-    if (!this.connected) return
-
-    this.stompClient.publish({
-      destination: '/pub/chat/reaction',
-      body: JSON.stringify({
-        roomId,
-        messageId: reaction.messageId,
-        type: reaction.type
+        content
       })
     })
   }

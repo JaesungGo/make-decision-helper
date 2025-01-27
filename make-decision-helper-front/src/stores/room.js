@@ -14,12 +14,8 @@ export const useRoomStore = defineStore('room', () => {
         nickname: params.nickname
       })
 
-      // 서버 응답 구조에 맞게 데이터 저장
       currentRoom.value = response.data.data
-      return {
-        success: true,
-        data: response.data.data
-      }
+      return { success: true, data: response.data.data }
     } catch (error) {
       return {
         success: false,
@@ -28,13 +24,11 @@ export const useRoomStore = defineStore('room', () => {
     }
   }
 
-  const joinRoom = async (inviteCode, nickname) => {
+  const joinRoom = async (roomId, nickname) => {
     try {
-      const response = await axios.post('/api/v1/rooms/join', {
-        inviteCode,
+      const response = await axios.post(`/api/v1/chat/rooms/${roomId}/join`, {
         nickname
       })
-      currentRoom.value = response.data.data
       return { success: true, data: response.data.data }
     } catch (error) {
       return {
@@ -44,9 +38,10 @@ export const useRoomStore = defineStore('room', () => {
     }
   }
 
-  const getRoomByInviteCode = async (inviteCode) => {
+  const getRoomInfo = async (roomId) => {
     try {
-      const response = await axios.get(`/api/v1/rooms/invite/${inviteCode}`)
+      const response = await axios.get(`/api/v1/rooms/${roomId}`)
+      currentRoom.value = response.data.data
       return { success: true, data: response.data.data }
     } catch (error) {
       return {
@@ -56,10 +51,9 @@ export const useRoomStore = defineStore('room', () => {
     }
   }
 
-  const getRoomInfo = async (roomId) => {
+  const getRoomByInviteCode = async (inviteCode) => {
     try {
-      const response = await axios.get(`/api/v1/rooms/${roomId}`)
-      currentRoom.value = response.data.data
+      const response = await axios.get(`/api/v1/rooms/invite/${inviteCode}`)
       return { success: true, data: response.data.data }
     } catch (error) {
       return {
@@ -82,12 +76,25 @@ export const useRoomStore = defineStore('room', () => {
     }
   }
 
+  const getMyRooms = async () => {
+    try {
+      const response = await axios.get('/api/v1/rooms/my-rooms')
+      return { success: true, data: response.data.data }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || '채팅방 목록 조회에 실패했습니다.'
+      }
+    }
+  }
+
   return {
     currentRoom,
     createRoom,
     joinRoom,
     getRoomByInviteCode,
     getRoomInfo,
-    leaveRoom
+    leaveRoom,
+    getMyRooms
   }
 })

@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-// import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Signup from '../views/Signup.vue'
 import Room from '../views/Room.vue'
-import RoomCreate from '../views/RoomCreate.vue'
+import Home from '../views/Home.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
-  // {
-  //   path: '/',
-  //   name: 'Home',
-  //   component: Home
-  // },
+  {
+    path: '/',
+    name: 'Home',
+    component: Home,
+    meta: { requiresAuth: true }
+  },
   {
     path: '/login',
     name: 'Login',
@@ -21,12 +21,6 @@ const routes = [
     path: '/signup',
     name: 'Signup',
     component: Signup
-  },
-  {
-    path: '/room/create',
-    name: 'RoomCreate',
-    component: RoomCreate,
-    meta: { requiresAuth: true }
   },
   {
     path: '/room/:roomId',
@@ -45,7 +39,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const isAuthenticated = await authStore.checkAuth()
-  
+
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
   } else {
