@@ -45,14 +45,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<Void>> login(@Valid @RequestBody LoginRequest request, @CookieValue(name = "guestToken", required = false) String guestToken) {
 
         try {
+
             Map<String, ResponseCookie> cookies = userService.login(request);
 
-            return ResponseEntity.ok()
+            ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookies.get("accessToken").toString())
-                    .header(HttpHeaders.SET_COOKIE, cookies.get("refreshToken").toString())
+                    .header(HttpHeaders.SET_COOKIE, cookies.get("refreshToken").toString());
+
+            if( guestToken != null){
+                ResponseCookie deleteGuestCookie = CookieUtil.deleteGuestCookie();
+                responseBuilder.header(HttpHeaders.SET_COOKIE, deleteGuestCookie.toString());
+            }
+
+            return responseBuilder
                     .body(ApiResponse.success(null,"로그인 성공"));
         } catch (Exception e){
             log.error("로그인 실패: {}", e.getMessage());

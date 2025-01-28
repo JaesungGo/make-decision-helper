@@ -58,6 +58,14 @@ public class CookieUtil {
         return cookies;
     }
 
+    public static ResponseCookie deleteGuestCookie(){
+        ResponseCookie responseCookie = ResponseCookie.from("guestToken","")
+                .maxAge(0)
+                .path("/")
+                .build();
+        return responseCookie;
+    }
+
 
     /**
      * 웹소켓 헤더이서 쿠키 추출하는 클래스
