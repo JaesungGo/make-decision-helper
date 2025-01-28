@@ -35,6 +35,9 @@ public class ChatRoom {
     @Column(nullable = false)
     private int maxParticipants;
 
+    @Column(name = "current_participants")
+    private int currentParticipants = 0;
+
     @Column(nullable = false)
     private LocalDateTime expirationTime;
 
@@ -70,17 +73,32 @@ public class ChatRoom {
      * @return 만료 시간에 해당하는 LocalDateTime (ex. 2024-10-31-30)
      */
     public static LocalDateTime setExpirationFromDuration(Integer duration) {
-        return LocalDateTime.now().plusMinutes(duration);
+        return LocalDateTime.now().plusHours(duration);
     }
 
     public void addChatUser(ChatUser chatUser){
         participants.add(chatUser);
         chatUser.setChatRoom(this);
+        currentParticipants++;
+    }
+
+    public void removeChatUser(ChatUser chatUser){
+        participants.remove(chatUser);
+        chatUser.setChatRoom(null);
+        currentParticipants--;
     }
 
     public void setInviteCode(InviteCode inviteCode){
         this.inviteCode = inviteCode;
         inviteCode.setChatRoom(this);
+    }
+
+    public void setHostUser(User user){
+        this.hostUser = user;
+    }
+
+    public int getCurrentParticipants() {
+        return participants.size();
     }
 
     public void changeRoomStatus(RoomStatus roomStatus){

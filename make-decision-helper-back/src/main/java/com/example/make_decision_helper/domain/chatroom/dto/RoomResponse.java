@@ -3,6 +3,7 @@ package com.example.make_decision_helper.domain.chatroom.dto;
 import com.example.make_decision_helper.domain.chatroom.ChatRoom;
 import com.example.make_decision_helper.domain.chatroom.InviteCode;
 import com.example.make_decision_helper.domain.chatuser.ChatUser;
+import com.example.make_decision_helper.domain.chatuser.ChatUserType;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,15 @@ public class RoomResponse {
     private LocalDateTime expiration;
     private String status;
     private List<ChatUserDto> participants;
+
+    public RoomResponse(Long id, String title, String inviteCode,
+                        int maxParticipants, int participantsSize, ChatUserType type) {
+        this.roomId = id;
+        this.title = title;
+        this.inviteCode = inviteCode;
+        this.maxParticipants = maxParticipants;
+        this.currentParticipants = participantsSize;
+    }
 
     public static RoomResponse from(ChatRoom chatRoom, ChatUser currentUser, InviteCode inviteCode) {
         return RoomResponse.builder()

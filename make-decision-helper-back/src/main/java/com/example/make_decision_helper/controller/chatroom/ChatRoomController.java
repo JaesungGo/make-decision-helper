@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.http.HttpStatus;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -91,5 +92,18 @@ public class ChatRoomController {
     public ResponseEntity<ApiResponse<RoomResponse>> roomInfoWithCode(){
 
         return null;
+    }
+
+    @GetMapping("/my-rooms")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getUserRooms() {
+        try {
+            List<RoomResponse> userRooms = chatRoomService.findUserRooms();
+            return ResponseEntity.ok()
+                    .body(ApiResponse.success(userRooms, "참여 중인 방 목록 조회 성공"));
+        } catch (Exception e) {
+            log.error("참여 중인 방 목록 조회 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(e.getMessage()));
+        }
     }
 }

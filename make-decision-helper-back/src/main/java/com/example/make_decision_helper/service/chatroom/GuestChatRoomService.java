@@ -56,23 +56,25 @@ public class GuestChatRoomService {
             chatRoomRepository.save(chatRoom);
         }
 
-        String guestKey = String.format("roomId:%d:nickname:%s", chatRoom.getId(), joinRoomRequest.getNickname());
-        if(redisTemplate.hasKey(guestKey) ||
-                chatRoom.getParticipants().stream().anyMatch(user -> user.getNickname().equals(joinRoomRequest.getNickname()))
-        ){
-            throw new InvalidRequestStateException("이미 사용중인 닉네임입니다");
-        }
+//        String guestKey = String.format("roomId:%d:nickname:%s", chatRoom.getId(), joinRoomRequest.getNickname());
+//        if(redisTemplate.hasKey(guestKey) ||
+//                chatRoom.getParticipants().stream().anyMatch(user -> user.getNickname().equals(joinRoomRequest.getNickname()))
+//        ){
+//            throw new InvalidRequestStateException("이미 사용중인 닉네임입니다");
+//        }
 
         ChatUser guestUser = ChatUser.builder()
                 .chatRoom(chatRoom)
+                .user(null)
                 .nickname(joinRoomRequest.getNickname())
                 .type(ChatUserType.GUEST)
                 .build();
 
         chatUserRepository.save(guestUser);
 
-        return RoomResponse.from(chatRoom,guestUser,inviteCode);
+        chatRoom.addChatUser(guestUser);
 
+        return RoomResponse.from(chatRoom,guestUser,inviteCode);
     }
 
     /**

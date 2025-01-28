@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -68,6 +70,8 @@ public class ChatRoomService {
                 .nickname(request.getNickname())
                 .build();
 
+        hostUser.addChatRoom(chatRoom);
+
         chatRoom.addChatUser(chatUser);
 
         ChatRoom saveChatRoom = chatRoomRepository.save(chatRoom);
@@ -100,12 +104,19 @@ public class ChatRoomService {
         User findUser = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(()-> new NoSuchElementException("사용자를 찾을 수 없습니다."));
 
+        if(roomByInviteCode.getParticipants().stream()
+                .anyMatch(chatUser -> chatUser.getUser().equals(findUser))){
+            throw new InvalidRequestStateException("현재 참여중인 채팅방입니다.");
+        }
+
         ChatUser chatUser = ChatUser.builder()
                     .chatRoom(roomByInviteCode)
                     .user(findUser)
                     .type(ChatUserType.USER)
                     .nickname(joinRoomRequest.getNickname())
                     .build();
+
+        roomByInviteCode.addChatUser(chatUser);
 
         return RoomResponse.from(roomByInviteCode,chatUser,inviteCode);
 
@@ -126,6 +137,8 @@ public class ChatRoomService {
         ChatUser chatUser = chatUserRepository.findByChatRoomAndUser(chatRoom,user)
                 .orElseThrow(()-> new NoSuchElementException("해당 유저가 참여중이 아닙니다"));
 
+        chatRoom.removeChatUser(chatUser);
+
         chatUserRepository.delete(chatUser);
 
         if (chatRoom.getParticipants().isEmpty()) {
@@ -142,9 +155,8 @@ public class ChatRoomService {
      */
     @Transactional
     public ChatRoom findRoomByInviteCode(String stringInviteCode){
-        InviteCode inviteCode = InviteCode.builder()
-                .inviteCode(stringInviteCode)
-                .build();
+        InviteCode inviteCode = inviteCodeRepository.findByInviteCode(stringInviteCode)
+                .orElseThrow(()-> new NoSuchElementException("초대 코드를 찾을 수 없습니다."));
         return chatRoomRepository.findChatRoomByInviteCode(inviteCode)
                 .orElseThrow(() -> new NoSuchElementException("방을 찾을 수 없습니다."));
     }
@@ -160,13 +172,18 @@ public class ChatRoomService {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
                 .orElseThrow(() -> new NoSuchElementException("채팅방을 찾을 수 없습니다."));
 
-        // 참여자 확인
         ChatUser chatUser = chatUserRepository.findByChatRoomAndUser(chatRoom, currentUser)
                 .orElseThrow(() -> new AccessDeniedException("해당 채팅방에 참여하지 않은 사용자입니다."));
 
         validateRoomStatus(chatRoom);
 
         return RoomResponse.from(chatRoom, chatUser, chatRoom.getInviteCode());
+    }
+
+    @Transactional(readOnly = true)
+    public List<RoomResponse> findUserRooms() {
+        User currentUser = getUser();
+        return chatUserRepository.findByUser(currentUser);
     }
 
     private User getUser() {
@@ -183,7 +200,7 @@ public class ChatRoomService {
     }
 
     private void validateRoomStatus(ChatRoom chatRoom) {
-        if (!chatRoom.isActive() || chatRoom.getRoomStatus() != ChatRoom.RoomStatus.ACTIVE) {
+        if (!chatRoom.isActive() || chatRoom.getRoomStatus() != ChatRoom.RoomStatus.ACTIVE || isRoomFull(chatRoom)) {
             throw new InvalidRequestStateException("접근할 수 없는 채팅방입니다.");
         }
         checkRoomExpiration(chatRoom);
