@@ -30,4 +30,5 @@ public class ChatMessage {
         this.content = content;
         this.sentAt = LocalDateTime.now();
     }
-} 
+
+}
