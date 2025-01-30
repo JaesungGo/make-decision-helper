@@ -6,15 +6,19 @@ import com.example.make_decision_helper.domain.chatroom.dto.JoinRoomRequest;
 import com.example.make_decision_helper.domain.chatroom.dto.RoomResponse;
 import com.example.make_decision_helper.domain.chatuser.ChatUser;
 import com.example.make_decision_helper.domain.chatuser.ChatUserType;
+import com.example.make_decision_helper.domain.user.CustomUserDetails;
+import com.example.make_decision_helper.domain.user.User;
 import com.example.make_decision_helper.repository.chatroom.ChatRoomRepository;
 import com.example.make_decision_helper.repository.chatroom.InviteCodeRepository;
 import com.example.make_decision_helper.repository.chatuser.ChatUserRepository;
 import com.example.make_decision_helper.util.jwt.JwtTokenProvider;
+import com.example.make_decision_helper.util.security.SecurityUtil;
 import com.sun.jdi.request.InvalidRequestStateException;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +26,9 @@ import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
 @Slf4j
-@Service
+@Service("guestChatRoomServiceImpl")
 @RequiredArgsConstructor
-public class GuestChatRoomService {
+public class GuestChatRoomServiceImpl implements ChatRoomService {
 
     private final InviteCodeRepository inviteCodeRepository;
     private final ChatRoomRepository chatRoomRepository;
@@ -38,7 +42,8 @@ public class GuestChatRoomService {
      * @return RoomResponse
      */
     @Transactional
-    public RoomResponse joinRoom(JoinRoomRequest joinRoomRequest){
+    @Override
+    public RoomResponse joinRoom(JoinRoomRequest joinRoomRequest, CustomUserDetails userDetails){
 
         InviteCode inviteCode = inviteCodeRepository.findByInviteCode(joinRoomRequest.getInviteCode())
                 .orElseThrow(()-> new NoSuchElementException("초대 코드를 찾을 수 없습니다"));
@@ -56,12 +61,12 @@ public class GuestChatRoomService {
             chatRoomRepository.save(chatRoom);
         }
 
-//        String guestKey = String.format("roomId:%d:nickname:%s", chatRoom.getId(), joinRoomRequest.getNickname());
-//        if(redisTemplate.hasKey(guestKey) ||
-//                chatRoom.getParticipants().stream().anyMatch(user -> user.getNickname().equals(joinRoomRequest.getNickname()))
-//        ){
-//            throw new InvalidRequestStateException("이미 사용중인 닉네임입니다");
-//        }
+        // String guestKey = String.format("roomId:%d:nickname:%s", chatRoom.getId(), joinRoomRequest.getNickname());
+        // if(redisTemplate.hasKey(guestKey) ||
+        //         chatRoom.getParticipants().stream().anyMatch(user -> user.getNickname().equals(joinRoomRequest.getNickname()))
+        // ){
+        //     throw new InvalidRequestStateException("이미 사용중인 닉네임입니다");
+        // }
 
         ChatUser guestUser = ChatUser.builder()
                 .chatRoom(chatRoom)
@@ -79,16 +84,20 @@ public class GuestChatRoomService {
 
     /**
      * 방 나가기 (게스트)
-     * @param guestToken
+     * @param roomId
      */
     @Transactional
-    public void leaveRoom(String guestToken){
+    @Override
+    public void leaveRoom(Long roomId, CustomUserDetails userDetails){
+
+        String guestToken = SecurityUtil.getCurrentGuestToken()
+                .orElseThrow(() -> new IllegalStateException("게스트 토큰이 없습니다"));
 
         if(guestToken == null && !jwtTokenProvider.validateToken(guestToken)){
             throw new IllegalStateException("유효하지 않은 토큰입니다");
         }
         Claims claims = jwtTokenProvider.getClaims(guestToken);
-        Long roomId = claims.get("roomId", Long.class);
+        roomId = claims.get("roomId", Long.class);
         String nickname = claims.get("nickname", String.class);
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
@@ -108,4 +117,32 @@ public class GuestChatRoomService {
             chatRoomRepository.save(chatRoom);
         }
     }
+
+    /**
+     * 채팅방 조회 (참여자 확인)
+     * @param roomId
+     * @return RoomResponse
+     */
+    @Transactional(readOnly = true)
+    public RoomResponse findRoom(Long roomId) {
+
+        String guestToken = SecurityUtil.getCurrentGuestToken()
+                .orElseThrow(() -> new NoSuchElementException("게스트 토큰을 찾을 수 없습니다."));
+
+        Claims claims = jwtTokenProvider.getClaims(guestToken);
+
+        if(!roomId.equals(claims.get("roomId", Long.class))){
+            throw new IllegalStateException("방에 참여할 수 없습니다 (게스트 토큰 불일치)");
+        }
+        String nicknameFindByGuestToken = claims.get("nickname", String.class);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new NoSuchElementException("채팅방을 찾을 수 없습니다."));
+
+        ChatUser chatUser = chatUserRepository.findByNickname(nicknameFindByGuestToken)
+                .orElseThrow(() -> new AccessDeniedException("해당 채팅방에 참여하지 않은 사용자입니다."));
+
+        return RoomResponse.from(chatRoom, chatUser, chatRoom.getInviteCode());
+    }
+
 }

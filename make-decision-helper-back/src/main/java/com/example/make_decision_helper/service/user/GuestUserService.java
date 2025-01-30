@@ -1,8 +1,10 @@
 package com.example.make_decision_helper.service.user;
 
 import com.example.make_decision_helper.domain.chatroom.ChatRoom;
+import com.example.make_decision_helper.domain.chatroom.InviteCode;
 import com.example.make_decision_helper.domain.chatuser.ChatUser;
 import com.example.make_decision_helper.repository.chatroom.ChatRoomRepository;
+import com.example.make_decision_helper.repository.chatroom.InviteCodeRepository;
 import com.example.make_decision_helper.util.cookie.CookieUtil;
 import com.example.make_decision_helper.util.jwt.JwtTokenProvider;
 import com.sun.jdi.request.InvalidRequestStateException;
@@ -12,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -20,15 +23,21 @@ public class GuestUserService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final JwtTokenProvider jwtTokenProvider;
+    private final ChatRoomRepository chatRoomRepository;
+    private final InviteCodeRepository inviteCodeRepository;
 
     /**
      * 게스트 토큰 생성 및 Redis에 임시 저장
-     * @param chatRoom
+     * @param inviteCode
      * @param nickname
      * @return
      */
     @Transactional
-    public String createGuestToken(ChatRoom chatRoom, String nickname){
+    public String createGuestToken(String inviteCode, String nickname){
+
+        InviteCode inviteCodeByString = inviteCodeRepository.findByInviteCode(inviteCode)
+                .orElseThrow(() -> new NoSuchElementException("초대코드를 찾을 수 없습니다"));
+        ChatRoom chatRoom = chatRoomRepository.findChatRoomByInviteCode(inviteCodeByString).orElseThrow(() -> new NoSuchElementException("채팅방을 찾을 수 없습니다"));
 
         Long roomId = chatRoom.getId();
         String guestId = String.format("GUEST_%d_%s", roomId, nickname);
