@@ -1,8 +1,10 @@
 package com.example.make_decision_helper.service.user;
 
 import com.example.make_decision_helper.domain.chatroom.ChatRoom;
+import com.example.make_decision_helper.domain.chatroom.InviteCode;
 import com.example.make_decision_helper.domain.chatuser.ChatUser;
-import com.example.make_decision_helper.domain.user.User;
+import com.example.make_decision_helper.repository.chatroom.ChatRoomRepository;
+import com.example.make_decision_helper.repository.chatroom.InviteCodeRepository;
 import com.example.make_decision_helper.util.jwt.JwtTokenProvider;
 import com.sun.jdi.request.InvalidRequestStateException;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +18,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.ArrayList;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,19 +27,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
 class GuestUserServiceTest {
 
-    @Mock(lenient = true)
+    @Mock
     private RedisTemplate<String, String> redisTemplate;
 
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
-    /**
-     * Resis 값 조작 관련 인터페이스
-     */
+    @Mock
+    private ChatRoomRepository chatRoomRepository;
+
+    @Mock
+    private InviteCodeRepository inviteCodeRepository;
+
     @Mock
     private ValueOperations<String, String> valueOperations;
 
@@ -43,18 +49,21 @@ class GuestUserServiceTest {
     GuestUserService guestUserService;
 
     private ChatRoom chatRoom;
+    private InviteCode inviteCode;
     private final String nickname = "testUser";
     private final Long roomId = 1L;
+    private final String inviteCodeString = "testCode";
 
     @BeforeEach
-    void beforeEach(){
-        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-
+    void beforeEach() {
         chatRoom = ChatRoom.builder()
                 .id(roomId)
                 .participants(new ArrayList<>())
                 .build();
 
+        inviteCode = InviteCode.builder()
+                .inviteCode(inviteCodeString)
+                .build();
     }
 
     @Test
@@ -63,18 +72,21 @@ class GuestUserServiceTest {
         // given
         String expectedToken = "test.jwt.token";
         String guestKey = String.format("roomId:%d:nickname:%s", roomId, nickname);
+        String guestId = String.format("GUEST_%d_%s", roomId, nickname);
 
+        when(inviteCodeRepository.findByInviteCode(inviteCodeString)).thenReturn(Optional.of(inviteCode));
+        when(chatRoomRepository.findChatRoomByInviteCode(inviteCode)).thenReturn(Optional.of(chatRoom));
         when(redisTemplate.hasKey(guestKey)).thenReturn(false);
-        when(jwtTokenProvider.createGuestToken(anyString(), eq(roomId), eq(nickname)))
-                .thenReturn(expectedToken);
+        when(jwtTokenProvider.createGuestToken(guestId, roomId, nickname)).thenReturn(expectedToken);
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
 
         // when
-        String resultToken = guestUserService.createGuestToken(chatRoom, nickname);
+        String resultToken = guestUserService.createGuestToken(inviteCodeString, nickname);
 
         // then
         assertEquals(expectedToken, resultToken);
         verify(valueOperations).set(eq(guestKey), eq(expectedToken), eq(24L), eq(TimeUnit.HOURS));
-        verify(jwtTokenProvider).createGuestToken(anyString(), eq(roomId), eq(nickname));
+        verify(jwtTokenProvider).createGuestToken(eq(guestId), eq(roomId), eq(nickname));
     }
 
     @Test
@@ -82,19 +94,22 @@ class GuestUserServiceTest {
     void guestTokenExistInRedis() {
         // given
         String guestKey = String.format("roomId:%d:nickname:%s", roomId, nickname);
+        
+        when(inviteCodeRepository.findByInviteCode(inviteCodeString)).thenReturn(Optional.of(inviteCode));
+        when(chatRoomRepository.findChatRoomByInviteCode(inviteCode)).thenReturn(Optional.of(chatRoom));
         when(redisTemplate.hasKey(guestKey)).thenReturn(true);
 
         // when then
         assertThrows(InvalidRequestStateException.class,
-                () -> guestUserService.createGuestToken(chatRoom, nickname),"이미 사용중인 닉네임입니다");
+                () -> guestUserService.createGuestToken(inviteCodeString, nickname));
 
-        verify(jwtTokenProvider, never()).createGuestToken(anyString(),any(),anyString());
-        verify(valueOperations, never()).set(anyString(),anyString(),anyLong(),any());
+        verify(jwtTokenProvider, never()).createGuestToken(anyString(), anyLong(), anyString());
+        verify(redisTemplate, never()).opsForValue();
     }
 
     @Test
     @DisplayName("채팅방에 이미 닉네임이 존재하는 경우 예외 테스트(MySQL)")
-    void guestTokenExistInDB(){
+    void guestTokenExistInDB() {
         // given
         ChatUser chatUser = ChatUser.builder()
                 .nickname(nickname)
@@ -102,15 +117,28 @@ class GuestUserServiceTest {
         chatRoom.getParticipants().add(chatUser);
 
         String guestKey = String.format("roomId:%d:nickname:%s", roomId, nickname);
+        
+        when(inviteCodeRepository.findByInviteCode(inviteCodeString)).thenReturn(Optional.of(inviteCode));
+        when(chatRoomRepository.findChatRoomByInviteCode(inviteCode)).thenReturn(Optional.of(chatRoom));
         when(redisTemplate.hasKey(guestKey)).thenReturn(false);
 
-        // when
+        // when then
         assertThrows(InvalidRequestStateException.class,
-                ()-> guestUserService.createGuestToken(chatRoom,nickname),"이미 사용중인 닉네임입니다");
+                () -> guestUserService.createGuestToken(inviteCodeString, nickname));
 
-        verify(jwtTokenProvider, never()).createGuestToken(anyString(),anyLong(),anyString());
-        verify(valueOperations, never()).set(anyString(),anyString(),anyLong(),any());
-
+        verify(jwtTokenProvider, never()).createGuestToken(anyString(), anyLong(), anyString());
+        verify(redisTemplate, never()).opsForValue();
     }
 
+    @Test
+    @DisplayName("존재하지 않는 초대 코드로 요청시 예외 테스트")
+    void invalidInviteCode() {
+        // given
+        when(inviteCodeRepository.findByInviteCode(inviteCodeString))
+                .thenReturn(Optional.empty());
+
+        // when then
+        assertThrows(NoSuchElementException.class,
+                () -> guestUserService.createGuestToken(inviteCodeString, nickname));
+    }
 }
