@@ -64,6 +64,23 @@ export const useAuthStore = defineStore('auth', () => {
       isAuthenticated.value = true
       return true
     } catch (error) {
+      // 인증 실패 시 토큰 재발급 시도
+      if (error.response?.data?.message === "유저 인증에 실패했습니다.") {
+        try {
+          const reissueResult = await reissueToken()
+          if (reissueResult.success) {
+            // 토큰 재발급 성공 시 다시 한 번 인증 체크
+            const retryResponse = await axios.get('/api/v1/auth/me')
+            user.value = retryResponse.data
+            isAuthenticated.value = true
+            return true
+          }
+        } catch (reissueError) {
+          console.error('토큰 재발급 실패:', reissueError)
+        }
+      }
+
+      // 모든 시도 실패 시
       user.value = null
       isAuthenticated.value = false
       return false
@@ -87,7 +104,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const joinAsGuest = async (inviteCode, nickname) => {
     try {
-      const response = await axios.post('/api/guest/rooms/join', {
+      const response = await axios.post('/api/v1/guest/rooms/join', {
         inviteCode,
         nickname
       })
@@ -95,8 +112,22 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || '입장에 실패했습니다.'
+        error: error.response?.data?.message || '게스트 입장에 실패했습니다.'
       }
+    }
+  }
+
+  const checkGuestAuth = async (roomId) => {
+    try {
+      console.log('Checking guest auth for room:', roomId)
+      const response = await axios.get(`/api/v1/guest/rooms/${roomId}`)
+      console.log('Guest auth response:', response)
+      isAuthenticated.value = false
+      user.value = null
+      return true
+    } catch (error) {
+      console.error('Guest auth error:', error)
+      return false
     }
   }
 
@@ -108,6 +139,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     reissueToken,
     joinAsGuest,
-    checkAuth
+    checkAuth,
+    checkGuestAuth
   }
 })

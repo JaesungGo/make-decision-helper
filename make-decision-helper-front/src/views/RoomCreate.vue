@@ -105,76 +105,84 @@
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 64px);
-    padding: 2rem;
-    background-color: #f5f5f5;
+    padding: var(--space-24);
+    background-color: var(--color-background-soft);
   }
 
   .room-create-form {
     width: 100%;
     max-width: 480px;
-    padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: var(--space-32);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
   }
 
   .title {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: var(--text-title2);
+    font-weight: var(--font-bold);
     text-align: center;
-    margin-bottom: 2rem;
-    color: #333;
+    color: var(--color-text);
+    margin-bottom: var(--space-24);
   }
 
   .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: var(--space-20);
   }
 
   .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #333;
+    margin-bottom: var(--space-4);
+    font-size: var(--text-subhead);
+    color: var(--color-text);
+    font-weight: var(--font-medium);
   }
 
-  .form-select {
+  .form-input, .form-select {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    background-color: white;
+    padding: var(--space-12);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-body);
+    background-color: var(--color-background-soft);
+    transition: all 0.2s ease;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--color-primary-light);
   }
 
   .submit-button {
     width: 100%;
-    padding: 1rem;
+    padding: var(--space-12);
     border: none;
-    border-radius: 8px;
-    background-color: #4CAF50;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-primary);
     color: white;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--text-body);
+    font-weight: var(--font-semibold);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
   }
 
   .submit-button:hover {
-    background-color: #45a049;
+    background-color: var(--color-primary-dark);
   }
 
   .submit-button:disabled {
-    background-color: #9ca3af;
+    background-color: var(--color-gray-400);
     cursor: not-allowed;
   }
 
   @media (max-width: 768px) {
     .room-create-container {
-      padding: 1rem;
+      padding: var(--space-16);
     }
 
     .room-create-form {
-      padding: 1.5rem;
+      padding: var(--space-24);
     }
   }
   </style>

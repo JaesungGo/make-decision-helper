@@ -51,9 +51,14 @@ export const useRoomStore = defineStore('room', () => {
     }
   }
 
-  const getRoomByInviteCode = async (inviteCode) => {
+  const getRoomByInviteCode = async (params) => {
     try {
-      const response = await axios.get(`/api/v1/rooms/invite/${inviteCode}`)
+      const response = await axios.post('/api/v1/rooms/join',{
+        inviteCode : params.inviteCode,
+        nickname: params.nickname
+      }
+
+      )
       return { success: true, data: response.data.data }
     } catch (error) {
       return {

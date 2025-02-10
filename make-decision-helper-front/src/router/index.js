@@ -38,13 +38,32 @@ const router = createRouter({
 // 네비게이션 가드 설정
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  const isAuthenticated = await authStore.checkAuth()
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login')
-  } else {
-    next()
+  if (to.meta.requiresAuth) {
+    if (to.name === 'Room') {
+      const isGuestAuthenticated = await authStore.checkGuestAuth(to.params.roomId)
+      console.log(isGuestAuthenticated)
+      if (isGuestAuthenticated) {
+        next()
+      } else {
+        const isAuthenticated = await authStore.checkAuth()
+        if (!isAuthenticated) {
+          next('/login')
+        } else {
+          next()
+        }
+      }
+      return
+    }
+
+    const isAuthenticated = await authStore.checkAuth()
+    if (!isAuthenticated) {
+      next('/login')
+      return
+    }
   }
+
+  next()
 })
 
 export default router

@@ -63,10 +63,6 @@
             {{ isGuestMode ? '이메일로 로그인' : '초대 코드로 입장' }}
           </button>
         </div>
-
-        <p v-if="!isGuestMode" class="signup-link">
-          계정이 없으신가요? <router-link to="/signup">회원가입</router-link>
-        </p>
       </div>
     </div>
   </template>
@@ -131,8 +127,15 @@
       if (isGuestMode.value) {
         // 게스트로 입장
         const result = await authStore.joinAsGuest(inviteCode.value, nickname.value)
+        console.log('Guest join result:', result)
         if (result.success) {
-          router.push(`/room/${result.data.roomId}`)
+          const roomId = result.data.data.roomId
+          console.log(roomId)
+          if (roomId) {
+            await router.push(`/room/${roomId}`)
+          } else {
+            alert('방 정보를 찾을 수 없습니다.')
+          }
         } else {
           errors.value.form = result.error
         }
@@ -159,38 +162,40 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 1rem;
-    background-color: #f5f5f5;
+    min-height: calc(100vh - 64px);
+    padding: var(--space-24);
+    background-color: var(--color-background-soft);
   }
 
   .login-form {
     width: 100%;
     max-width: 400px;
-    padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: var(--space-32);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
   }
 
   .login-title {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: var(--text-title2);
+    font-weight: var(--font-bold);
     text-align: center;
-    margin-bottom: 0.5rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-8);
   }
 
   .login-subtitle {
-    color: #666;
+    color: var(--color-text-light);
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-24);
+    font-size: var(--text-subhead);
   }
 
   .social-buttons {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: var(--space-12);
+    margin-bottom: var(--space-24);
   }
 
   .social-button {
@@ -198,110 +203,67 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0.875rem;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    font-size: 1rem;
-    font-weight: 500;
+    padding: var(--space-12);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-body);
+    font-weight: var(--font-medium);
     cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .social-button img {
-    width: 20px;
-    height: 20px;
-    margin-right: 0.75rem;
+    transition: all 0.2s ease;
+    border: 1px solid var(--color-border);
   }
 
   .social-button.kakao {
     background-color: #FEE500;
-    border: none;
-  }
-
-  .divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 1.5rem 0;
-  }
-
-  .divider::before,
-  .divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .divider span {
-    padding: 0 1rem;
-    color: #666;
-    font-size: 0.875rem;
   }
 
   .form-input {
     width: 100%;
-    padding: 0.875rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
+    padding: var(--space-12);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-body);
+    margin-bottom: var(--space-12);
+    background-color: var(--color-background-soft);
   }
 
-  .form-input.has-error {
-    border-color: #ff4444;
+  .form-input:focus {
+    border-color: var(--color-primary);
+    outline: none;
   }
 
   .submit-button {
     width: 100%;
-    padding: 0.875rem;
+    padding: var(--space-12);
     border: none;
-    border-radius: 8px;
-    background-color: #1a73e8;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-primary);
     color: white;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--text-body);
+    font-weight: var(--font-semibold);
     cursor: pointer;
-    margin-top: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .submit-button:hover {
+    background-color: var(--color-primary-dark);
   }
 
   .submit-button:disabled {
-    background-color: #9ca3af;
-  }
-
-  .toggle-mode {
-    text-align: center;
-    margin-top: 1rem;
+    background-color: var(--color-gray-400);
   }
 
   .toggle-button {
     background: none;
     border: none;
-    color: #1a73e8;
-    font-size: 0.875rem;
+    color: var(--color-primary);
+    font-size: var(--text-footnote);
     cursor: pointer;
-  }
-
-  .signup-link {
-    text-align: center;
-    margin-top: 1.5rem;
-    font-size: 0.875rem;
-    color: #666;
-  }
-
-  .signup-link a {
-    color: #1a73e8;
-    text-decoration: none;
-    font-weight: 500;
+    padding: var(--space-8);
   }
 
   @media (max-width: 480px) {
     .login-form {
-      padding: 1.5rem;
-    }
-
-    .social-button {
-      padding: 0.75rem;
+      padding: var(--space-24);
     }
   }
   </style>
