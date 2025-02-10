@@ -1,6 +1,7 @@
 package com.example.make_decision_helper.domain.user;
 
 import com.example.make_decision_helper.domain.chatroom.ChatRoom;
+import com.example.make_decision_helper.domain.chatuser.ChatUser;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,9 @@ public class User {
 
     @OneToMany(mappedBy = "hostUser")
     private final List<ChatRoom> hostedRooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private final List<ChatUser> userList = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     private UserRole role;
@@ -49,6 +53,15 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void addChatRoom(ChatRoom chatRoom){
+        hostedRooms.add(chatRoom);
+    }
+
+    public void addChatUser(ChatUser chatUser) {
+        userList.add(chatUser);
+        chatUser.setChatUser(this);
     }
 
     public enum Status{

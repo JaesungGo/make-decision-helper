@@ -6,10 +6,12 @@ import com.example.make_decision_helper.domain.chatroom.dto.*;
 import com.example.make_decision_helper.domain.user.CustomUserDetails;
 import com.example.make_decision_helper.service.chatroom.ChatRoomService;
 import com.example.make_decision_helper.service.chatroom.InviteCodeService;
+import com.example.make_decision_helper.service.chatroom.UserChatRoomServiceImpl;
 import com.example.make_decision_helper.util.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,11 +26,16 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/rooms")
-@RequiredArgsConstructor
 public class ChatRoomController {
 
-    private final ChatRoomService chatRoomService;
+    private final UserChatRoomServiceImpl userChatRoomService;
     private final InviteCodeService inviteCodeService;
+
+    public ChatRoomController(UserChatRoomServiceImpl userChatRoomService,
+                              InviteCodeService inviteCodeService) {
+        this.userChatRoomService = userChatRoomService;
+        this.inviteCodeService = inviteCodeService;
+    }
 
     @Transactional
     @PostMapping
@@ -37,7 +44,7 @@ public class ChatRoomController {
             InviteCode inviteCode = inviteCodeService.createInviteCode();
             return ResponseEntity.ok().body(
                     ApiResponse.success(
-                            chatRoomService.createRoom(createRoomRequest, inviteCode.getInviteCode())
+                            userChatRoomService.createRoom(createRoomRequest, inviteCode.getInviteCode())
                     )
             );
         } catch (Exception e){
@@ -51,7 +58,7 @@ public class ChatRoomController {
         try {
             return ResponseEntity.ok().body(
                     ApiResponse.success(
-                            chatRoomService.joinRoomWithInviteCode(joinRoomRequest, (CustomUserDetails) userDetails)
+                            userChatRoomService.joinRoom(joinRoomRequest, (CustomUserDetails) userDetails)
                     )
             );
         }catch (Exception e){
@@ -64,8 +71,8 @@ public class ChatRoomController {
     @DeleteMapping("/{roomId}/leave")
     public ResponseEntity<ApiResponse<Void>> exitRoom(@PathVariable Long roomId, @AuthenticationPrincipal UserDetails userDetails){
         try{
-            String userEmail = userDetails.getUsername();
-            chatRoomService.leaveRoom(roomId,userEmail);
+            CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
+            userChatRoomService.leaveRoom(roomId,customUserDetails);
             return ResponseEntity.ok().body(ApiResponse.success(null));
         } catch (Exception e){
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
@@ -76,7 +83,7 @@ public class ChatRoomController {
     public ResponseEntity<ApiResponse<RoomResponse>> getRoom(@PathVariable Long roomId) {
         try {
             return ResponseEntity.ok()
-                    .body(ApiResponse.success(chatRoomService.findRoom(roomId)));
+                    .body(ApiResponse.success(userChatRoomService.findRoom(roomId)));
         } catch (AccessDeniedException e) {
             log.error("채팅방 접근 권한 없음: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -88,16 +95,10 @@ public class ChatRoomController {
         }
     }
 
-    @GetMapping("/invite/{inviteCode}")
-    public ResponseEntity<ApiResponse<RoomResponse>> roomInfoWithCode(){
-
-        return null;
-    }
-
     @GetMapping("/my-rooms")
     public ResponseEntity<ApiResponse<List<RoomResponse>>> getUserRooms() {
         try {
-            List<RoomResponse> userRooms = chatRoomService.findUserRooms();
+            List<RoomResponse> userRooms = userChatRoomService.findUserRooms();
             return ResponseEntity.ok()
                     .body(ApiResponse.success(userRooms, "참여 중인 방 목록 조회 성공"));
         } catch (Exception e) {

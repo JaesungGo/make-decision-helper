@@ -71,6 +71,8 @@ public class UserChatRoomServiceImpl implements UserChatRoomService{
 
         hostUser.addChatRoom(chatRoom);
 
+        hostUser.addChatUser(chatUser);
+
         chatRoom.addChatUser(chatUser);
 
         ChatRoom saveChatRoom = chatRoomRepository.save(chatRoom);
@@ -119,6 +121,10 @@ public class UserChatRoomServiceImpl implements UserChatRoomService{
                 .build();
 
         roomByInviteCode.addChatUser(chatUser);
+
+        findUser.addChatUser(chatUser);
+
+        chatRoomRepository.save(roomByInviteCode);
 
         return RoomResponse.from(roomByInviteCode,chatUser,inviteCode);
 

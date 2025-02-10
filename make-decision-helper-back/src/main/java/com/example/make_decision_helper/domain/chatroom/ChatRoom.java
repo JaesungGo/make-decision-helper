@@ -53,6 +53,7 @@ public class ChatRoom {
 
     public enum RoomStatus{
         ACTIVE, EXPIRED, CLOSED
+
     }
 
     @Builder

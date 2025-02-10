@@ -44,7 +44,7 @@ public class JwtTokenProvider {
     }
 
     /**
-     * AccessToken, RefreshToken 발급 및 쿠키에 담아 반환
+     * AccessToken, RefreshToken 발급 및 맵에 담아 반환
      * @param email
      * @param role
      * @return Cookie Map

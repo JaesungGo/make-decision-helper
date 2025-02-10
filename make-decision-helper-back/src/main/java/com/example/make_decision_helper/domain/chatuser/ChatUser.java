@@ -56,17 +56,12 @@ public class ChatUser {
         this.chatRoom = chatRoom;
     }
 
+    public void setChatUser(User user){
+        this.user = user;
+    }
+
     public void setChatRoom(ChatRoom chatRoom) {
         this.chatRoom = chatRoom;
     }
 
-    // 게스트용 생성자
-    public static ChatUser createGuest(ChatRoom chatRoom, String nickname) {
-        ChatUser participant = new ChatUser();
-        participant.chatRoom = chatRoom;
-        participant.nickname = nickname;
-        participant.type = ChatUserType.GUEST;
-        participant.joinedAt = LocalDateTime.now();
-        return participant;
-    }
 }

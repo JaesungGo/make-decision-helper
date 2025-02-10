@@ -79,7 +79,7 @@ public class GuestChatRoomServiceImpl implements ChatRoomService {
 
         chatRoom.addChatUser(guestUser);
 
-        return RoomResponse.from(chatRoom,guestUser,inviteCode);
+        return RoomResponse.toGuest(chatRoom,guestUser,inviteCode);
     }
 
     /**

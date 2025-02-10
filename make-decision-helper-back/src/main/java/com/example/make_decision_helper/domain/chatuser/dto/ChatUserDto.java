@@ -1,4 +1,4 @@
-package com.example.make_decision_helper.domain.chatroom.dto;
+package com.example.make_decision_helper.domain.chatuser.dto;
 
 import com.example.make_decision_helper.domain.chatuser.ChatUser;
 import lombok.AllArgsConstructor;
@@ -20,7 +20,7 @@ public class ChatUserDto {
 
     public static ChatUserDto from(ChatUser chatUser) {
         return ChatUserDto.builder()
-                .userId(chatUser.getUser().getId())
+                .userId(chatUser.getId())
                 .nickname(chatUser.getNickname())
                 .userType(chatUser.getType().name())
                 .joinedAt(chatUser.getJoinedAt())
