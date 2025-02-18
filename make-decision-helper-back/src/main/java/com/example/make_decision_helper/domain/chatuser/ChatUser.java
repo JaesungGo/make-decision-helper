@@ -4,6 +4,7 @@ import com.example.make_decision_helper.domain.chatroom.ChatRoom;
 import com.example.make_decision_helper.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,12 +25,12 @@ public class ChatUser {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_room_id", nullable = false)
-    private ChatRoom chatRoom;
+    @JoinColumn(name = "chat_room_id")
+    ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
-    private User user;  // 게스트는 null
+    private User user;
 
     @Column(nullable = false)
     private String nickname;
@@ -41,22 +42,26 @@ public class ChatUser {
     @Column(nullable = false)
     private LocalDateTime joinedAt;
 
-    // 로그인 사용자용 생성자
-    public ChatUser(ChatRoom chatRoom, User user, ChatUserType type) {
-        this.chatRoom = chatRoom;
-        this.user = user;
-        this.nickname = user.getNickname();
-        this.type = type;
+    @PrePersist
+    protected  void onCreate(){
         this.joinedAt = LocalDateTime.now();
     }
 
-    // 게스트용 생성자
-    public static ChatUser createGuest(ChatRoom chatRoom, String nickname) {
-        ChatUser participant = new ChatUser();
-        participant.chatRoom = chatRoom;
-        participant.nickname = nickname;
-        participant.type = ChatUserType.GUEST;
-        participant.joinedAt = LocalDateTime.now();
-        return participant;
+    @Builder
+    public ChatUser(Long id, ChatRoom chatRoom, User user, String nickname, ChatUserType type) {
+        this.id = id;
+        this.user = user;
+        this.nickname = nickname;
+        this.type = type;
+        this.chatRoom = chatRoom;
     }
+
+    public void setChatUser(User user){
+        this.user = user;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+    }
+
 }

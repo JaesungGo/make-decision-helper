@@ -3,7 +3,7 @@
       <div class="login-form">
         <h1 class="login-title">환영합니다</h1>
         <p class="login-subtitle">로그인하거나 초대 코드로 시작하세요</p>
-  
+
         <div class="social-buttons">
           <button class="social-button google">
             <img src="@/assets/google-icon.png" alt="Google" />
@@ -14,15 +14,14 @@
             카카오로 계속하기
           </button>
         </div>
-  
+
         <div class="divider">
           <span>또는</span>
         </div>
-  
+
         <form @submit.prevent="handleSubmit" class="form-content">
-          <div class="form-group">
+          <div v-if="isGuestMode" class="form-group">
             <input
-              v-if="isInviteMode"
               v-model="inviteCode"
               type="text"
               class="form-input"
@@ -30,16 +29,21 @@
               placeholder="초대 코드를 입력하세요"
             >
             <input
-              v-else
+              v-model="nickname"
+              type="text"
+              class="form-input"
+              :class="{ 'has-error': errors.nickname }"
+              placeholder="닉네임을 입력하세요"
+            >
+          </div>
+          <div v-else class="form-group">
+            <input
               v-model="email"
               type="email"
               class="form-input"
               :class="{ 'has-error': errors.email }"
               placeholder="이메일을 입력하세요"
             >
-          </div>
-  
-          <div v-if="!isInviteMode" class="form-group">
             <input
               v-model="password"
               type="password"
@@ -48,56 +52,57 @@
               placeholder="비밀번호를 입력하세요"
             >
           </div>
-  
+
           <button type="submit" class="submit-button" :disabled="isLoading">
             {{ submitButtonText }}
           </button>
         </form>
-  
+
         <div class="toggle-mode">
           <button @click="toggleMode" class="toggle-button">
-            {{ isInviteMode ? '이메일로 로그인' : '초대 코드로 입장' }}
+            {{ isGuestMode ? '이메일로 로그인' : '초대 코드로 입장' }}
           </button>
         </div>
-  
-        <p v-if="!isInviteMode" class="signup-link">
-          계정이 없으신가요? <router-link to="/signup">회원가입</router-link>
-        </p>
       </div>
     </div>
   </template>
-  
+
   <script setup>
   import { ref, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '@/stores/auth'
-  
+
   const router = useRouter()
   const authStore = useAuthStore()
-  
-  const isInviteMode = ref(false)
+
+  const isGuestMode = ref(true)
   const email = ref('')
   const password = ref('')
   const inviteCode = ref('')
+  const nickname = ref('')
   const errors = ref({})
   const isLoading = ref(false)
-  
+
   const submitButtonText = computed(() => {
     if (isLoading.value) return '처리 중...'
-    return isInviteMode.value ? '채팅방 입장' : '로그인'
+    return isGuestMode.value ? '게스트로 입장' : '로그인'
   })
-  
+
   const toggleMode = () => {
-    isInviteMode.value = !isInviteMode.value
+    isGuestMode.value = !isGuestMode.value
     errors.value = {}
   }
-  
+
   const validateForm = () => {
     errors.value = {}
-    
-    if (isInviteMode.value) {
+
+    if (isGuestMode.value) {
       if (!inviteCode.value) {
         errors.value.inviteCode = '초대 코드를 입력해주세요.'
+        return false
+      }
+      if (!nickname.value) {
+        errors.value.nickname = '닉네임을 입력해주세요.'
         return false
       }
     } else {
@@ -112,17 +117,28 @@
     }
     return true
   }
-  
+
   const handleSubmit = async () => {
     if (!validateForm()) return
-  
+
     isLoading.value = true
-    
+
     try {
-      if (isInviteMode.value) {
-        // 초대 코드로 입장
-        await authStore.joinWithInviteCode(inviteCode.value)
-        router.push(`/room/${inviteCode.value}`)
+      if (isGuestMode.value) {
+        // 게스트로 입장
+        const result = await authStore.joinAsGuest(inviteCode.value, nickname.value)
+        console.log('Guest join result:', result)
+        if (result.success) {
+          const roomId = result.data.data.roomId
+          console.log(roomId)
+          if (roomId) {
+            await router.push(`/room/${roomId}`)
+          } else {
+            alert('방 정보를 찾을 수 없습니다.')
+          }
+        } else {
+          errors.value.form = result.error
+        }
       } else {
         // 일반 로그인
         const result = await authStore.login(email.value, password.value)
@@ -140,155 +156,114 @@
     }
   }
   </script>
-  
+
   <style scoped>
   .login-container {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 1rem;
-    background-color: #f5f5f5;
+    min-height: calc(100vh - 64px);
+    padding: var(--space-24);
+    background-color: var(--color-background-soft);
   }
-  
+
   .login-form {
     width: 100%;
     max-width: 400px;
-    padding: 2rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: var(--space-32);
+    background: var(--color-background);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
   }
-  
+
   .login-title {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: var(--text-title2);
+    font-weight: var(--font-bold);
     text-align: center;
-    margin-bottom: 0.5rem;
+    color: var(--color-text);
+    margin-bottom: var(--space-8);
   }
-  
+
   .login-subtitle {
-    color: #666;
+    color: var(--color-text-light);
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: var(--space-24);
+    font-size: var(--text-subhead);
   }
-  
+
   .social-buttons {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: var(--space-12);
+    margin-bottom: var(--space-24);
   }
-  
+
   .social-button {
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0.875rem;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    font-size: 1rem;
-    font-weight: 500;
+    padding: var(--space-12);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-body);
+    font-weight: var(--font-medium);
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    border: 1px solid var(--color-border);
   }
-  
-  .social-button img {
-    width: 20px;
-    height: 20px;
-    margin-right: 0.75rem;
-  }
-  
+
   .social-button.kakao {
     background-color: #FEE500;
-    border: none;
   }
-  
-  .divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    margin: 1.5rem 0;
-  }
-  
-  .divider::before,
-  .divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .divider span {
-    padding: 0 1rem;
-    color: #666;
-    font-size: 0.875rem;
-  }
-  
+
   .form-input {
     width: 100%;
-    padding: 0.875rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 1rem;
-    margin-bottom: 0.75rem;
+    padding: var(--space-12);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-body);
+    margin-bottom: var(--space-12);
+    background-color: var(--color-background-soft);
   }
-  
-  .form-input.has-error {
-    border-color: #ff4444;
+
+  .form-input:focus {
+    border-color: var(--color-primary);
+    outline: none;
   }
-  
+
   .submit-button {
     width: 100%;
-    padding: 0.875rem;
+    padding: var(--space-12);
     border: none;
-    border-radius: 8px;
-    background-color: #1a73e8;
+    border-radius: var(--radius-lg);
+    background-color: var(--color-primary);
     color: white;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--text-body);
+    font-weight: var(--font-semibold);
     cursor: pointer;
-    margin-top: 1rem;
+    transition: all 0.2s ease;
   }
-  
+
+  .submit-button:hover {
+    background-color: var(--color-primary-dark);
+  }
+
   .submit-button:disabled {
-    background-color: #9ca3af;
+    background-color: var(--color-gray-400);
   }
-  
-  .toggle-mode {
-    text-align: center;
-    margin-top: 1rem;
-  }
-  
+
   .toggle-button {
     background: none;
     border: none;
-    color: #1a73e8;
-    font-size: 0.875rem;
+    color: var(--color-primary);
+    font-size: var(--text-footnote);
     cursor: pointer;
+    padding: var(--space-8);
   }
-  
-  .signup-link {
-    text-align: center;
-    margin-top: 1.5rem;
-    font-size: 0.875rem;
-    color: #666;
-  }
-  
-  .signup-link a {
-    color: #1a73e8;
-    text-decoration: none;
-    font-weight: 500;
-  }
-  
+
   @media (max-width: 480px) {
     .login-form {
-      padding: 1.5rem;
-    }
-  
-    .social-button {
-      padding: 0.75rem;
+      padding: var(--space-24);
     }
   }
   </style>

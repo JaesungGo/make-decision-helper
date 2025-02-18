@@ -1,5 +1,8 @@
 package com.example.make_decision_helper.util.jwt;
 
+import com.example.make_decision_helper.domain.chatroom.ChatRoom;
+import com.example.make_decision_helper.domain.chatuser.ChatUser;
+import com.example.make_decision_helper.domain.user.User;
 import com.example.make_decision_helper.domain.user.UserRole;
 import com.example.make_decision_helper.util.cookie.CookieUtil;
 import io.jsonwebtoken.Claims;
@@ -15,6 +18,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseCookie;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -23,17 +27,13 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @DisplayName("JWT 토큰 관련 테스트")
 class JwtTokenProviderTest {
 
     @Mock
     private RedisTemplate<String, String> redisTemplate;
-
-    @Mock
-    private CookieUtil cookieUtil;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -68,22 +68,25 @@ class JwtTokenProviderTest {
 
         //given
         ResponseCookie testCookie = ResponseCookie.from("token", "value").build();
-        when(cookieUtil.createCookie(anyString(),anyString(),anyLong())).thenReturn(testCookie);
+        try (MockedStatic<CookieUtil> cookieUtil = mockStatic(CookieUtil.class)) {
+            cookieUtil.when(() -> CookieUtil.createCookie(anyString(), anyString(), anyLong()))
+                    .thenReturn(testCookie);
 
-        //when
-        Map<String, ResponseCookie> testCookiesWithToken = jwtTokenProvider.createTokenAndCookies(TEST_EMAIL, TEST_ROLE);
+            //when
+            Map<String, ResponseCookie> testCookiesWithToken = jwtTokenProvider.createTokenAndCookies(TEST_EMAIL, TEST_ROLE);
 
-        //then
-        assertAll(
-                () -> assertTrue(testCookiesWithToken.containsKey("accessToken")),
-                () -> assertTrue(testCookiesWithToken.containsKey("refreshToken")),
-                () -> verify(valueOperations).set(
-                        argThat(key -> key.startsWith("RefreshToken:")),
-                        anyString(),
-                        eq(REFRESH_TOKEN_EXPIRATION),
-                        eq(TimeUnit.MILLISECONDS)
-                )
-        );
+            //then
+            assertAll(
+                    () -> assertTrue(testCookiesWithToken.containsKey("accessToken")),
+                    () -> assertTrue(testCookiesWithToken.containsKey("refreshToken")),
+                    () -> verify(valueOperations).set(
+                            argThat(key -> key.startsWith("RefreshToken:")),
+                            anyString(),
+                            eq(REFRESH_TOKEN_EXPIRATION),
+                            eq(TimeUnit.MILLISECONDS)
+                    )
+            );
+        }
     }
 
 //    @Test
@@ -136,6 +139,32 @@ class JwtTokenProviderTest {
         //when, then
         assertTrue(jwtTokenProvider.validateToken(testToken));
 
+    }
+
+    @Test
+    @DisplayName("Guest용 토큰 발급 테스트")
+    void createGuestTokenText(){
+        //given
+        Long roomId = 1L;
+        String nickname = "testUser";
+        String guestId = String.format("GUEST_%d_%s", 1L, "testUser");
+
+
+        //when
+        String guestToken = jwtTokenProvider.createGuestToken(guestId, roomId,nickname);
+
+        //then
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(Base64.getEncoder().encodeToString(SECRET_KEY.getBytes()))
+                .build()
+                .parseClaimsJws(guestToken)
+                .getBody();
+
+        assertAll(
+                ()-> assertEquals(guestId, claims.getSubject()),
+                ()-> assertEquals(roomId, claims.get("roomId", Long.class)),
+                ()-> assertEquals(nickname, claims.get("nickname",String.class))
+        );
     }
 
     private String createTestToken(String email, UserRole role) {

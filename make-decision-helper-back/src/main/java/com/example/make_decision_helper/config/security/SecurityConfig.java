@@ -1,6 +1,7 @@
 package com.example.make_decision_helper.config.security;
 
 import com.example.make_decision_helper.domain.user.UserRole;
+import com.example.make_decision_helper.filter.guest.GuestTokenFilter;
 import com.example.make_decision_helper.filter.jwt.JwtAuthenticationFilter;
 import com.example.make_decision_helper.util.cookie.CookieUtil;
 import com.example.make_decision_helper.util.jwt.JwtTokenProvider;
@@ -42,14 +43,14 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/auth/**").authenticated()
+                        .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated()
                 )
 
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, cookieUtil),
-                        UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new GuestTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
 
         return http.build();

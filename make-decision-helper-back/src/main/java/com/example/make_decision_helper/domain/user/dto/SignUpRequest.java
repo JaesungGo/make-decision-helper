@@ -14,14 +14,14 @@ public class SignUpRequest {
     @Pattern(regexp = "^[A-Za-z0-9]+$")
     private String password;
 
-    @Size(min=2, max=10, message="닉네임은 2자 이상 10자 이하여야 합니다.")
-    private String nickname;
+//    @Size(min=2, max=10, message="닉네임은 2자 이상 10자 이하여야 합니다.")
+//    private String nickname;
 
     @Builder
     public SignUpRequest(String email, String password, String nickname) {
         this.email = email;
         this.password = password;
-        this.nickname = nickname;
+//        this.nickname = nickname;
     }
 
 }

@@ -35,6 +35,7 @@ public class UserService {
      * 회원가입 하기
      * @param signUpRequest
      */
+    @Transactional
     public void createUser(SignUpRequest signUpRequest){
 
         // 이메일 중복 체크
@@ -46,7 +47,6 @@ public class UserService {
         User user = User.builder()
                 .email(signUpRequest.getEmail())
                 .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .nickname(signUpRequest.getNickname())
                 .role(UserRole.USER)
                 .build();
 
@@ -58,6 +58,7 @@ public class UserService {
      * @param findUserRequest
      * @return 찾은 유저 정보 혹은 예외
      */
+    @Transactional(readOnly = true)
     public User findByEmail(FindUserRequest findUserRequest){
         return userRepository.findByEmail(findUserRequest.getEmail())
                 .orElseThrow(()-> new RuntimeException("해당 유저를 찾을 수 없습니다."));
