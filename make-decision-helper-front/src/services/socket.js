@@ -8,14 +8,16 @@ class SocketService {
   }
 
   connect(roomId, onMessageReceived) {
-    const socket = new SockJS(import.meta.env.VITE_API_BASE_URL + '/ws-stomp')
+    // SockJS 인스턴스 생성 시 withCredentials 옵션 추가
+    const socket = new SockJS(import.meta.env.VITE_API_BASE_URL + '/ws-stomp', null, {
+      transports: ['websocket', 'xhr-streaming', 'xhr-polling'],
+      withCredentials: true
+    })
+
     this.stompClient = new Client({
       webSocketFactory: () => socket,
-      connectHeaders: {
-        'X-XSRF-TOKEN': document.cookie.match('XSRF-TOKEN=(.*?);')?.[1]
-      },
       debug: function (str) {
-        console.log(str);
+        console.log(str)
       },
       onConnect: () => {
         this.connected = true

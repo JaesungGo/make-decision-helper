@@ -33,6 +33,7 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatUserRepository chatUserRepository;
 
+    @Transactional
     public ChatMessageResponse saveAndGetMessage(ChatMessageRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 

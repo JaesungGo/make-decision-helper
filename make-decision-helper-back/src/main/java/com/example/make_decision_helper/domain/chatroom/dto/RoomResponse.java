@@ -66,7 +66,7 @@ public class RoomResponse {
                 .expiration(chatRoom.getExpirationTime())
                 .status(chatRoom.getRoomStatus().name())
                 .participants(chatRoom.getParticipants().stream()
-                        .map(GuestUserDTO::from)
+                        .map(GuestUserDTO::from)   
                         .collect(Collectors.toList()))
                 .build();
     }

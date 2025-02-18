@@ -4,11 +4,13 @@ import com.example.make_decision_helper.domain.user.UserRole;
 import com.example.make_decision_helper.util.cookie.CookieUtil;
 import com.example.make_decision_helper.util.jwt.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessageDeliveryException;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -17,38 +19,30 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.nio.file.attribute.UserPrincipal;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
-@RequiredArgsConstructor
 @Configuration
+@RequiredArgsConstructor
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtTokenProvider jwtTokenProvider;
-    private final RedisTemplate<String, String> redisTemplate;
 
-    /**
-     * 메시지 브로커 활성화 설정 "/sub","pub" 클라이언트->서버의 접두사 "/app"
-     * @param config
-     */
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/sub");
-        config.setApplicationDestinationPrefixes("/pub");
-        config.setUserDestinationPrefix("/user");
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/sub");
+        registry.setApplicationDestinationPrefixes("/pub");
     }
 
-
-
-    /**
-     * STOMP 프로토콜을 사용하여 웹소켓 사용을 위한 종단점 등록 "/ws-stomp"
-     * @param registry
-     */
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-stomp")
@@ -56,53 +50,33 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .withSockJS();
     }
 
-    /**
-     * 들어오는 STOMP 메시지에 대한 처리
-     * @param registration
-     */
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                
+                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+                    try {
+                        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                        if (attributes == null) {
+                            throw new MessageDeliveryException("인증 정보를 찾을 수 없습니다");
+                        }
 
-                if (StompCommand.CONNECT.equals(accessor.getCommand()) || 
-                    StompCommand.SEND.equals(accessor.getCommand())) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, List<String>> headers = (Map<String, List<String>>)
-                            message.getHeaders().get(StompHeaderAccessor.NATIVE_HEADERS);
+                        String token = CookieUtil.getCookieValue(attributes.getRequest(), "accessToken");
+                        if (token == null || !jwtTokenProvider.validateToken(token)) {
+                            throw new MessageDeliveryException("유효하지 않은 토큰입니다");
+                        }
 
-                    if (headers != null && headers.containsKey("cookie")) {
-                        String accessToken = CookieUtil.extractTokenFromWebSocketCookie(headers, "accessToken");
-                        String guestToken = CookieUtil.extractTokenFromWebSocketCookie(headers, "guestToken");
-                        handleAuthentication(accessor, accessToken, guestToken);
+                        String userEmail = jwtTokenProvider.getEmailFromToken(token);
+                        accessor.setUser(() -> userEmail);
+                    } catch (Exception e) {
+                        throw new MessageDeliveryException("웹소켓 연결 실패: " + e.getMessage());
                     }
                 }
                 return message;
             }
         });
     }
-
-    /**
-     * 일반 사용자일 때, 게스트 사용자일 때 인증 처리
-     * @param accessor
-     * @param accessToken
-     * @param guestToken
-     */
-    private void handleAuthentication(StompHeaderAccessor accessor, String accessToken, String guestToken) {
-        if (accessToken != null && jwtTokenProvider.validateToken(accessToken)) {
-            Authentication auth = jwtTokenProvider.getAuthentication(accessToken);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            accessor.setUser(auth);
-        } else if (guestToken != null && jwtTokenProvider.validateToken(guestToken)) {
-            Claims claims = jwtTokenProvider.getClaims(guestToken);
-            if (UserRole.GUEST.name().equals(claims.get("role", String.class))) {
-                Authentication auth = jwtTokenProvider.getAuthentication(guestToken);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                accessor.setUser(auth);
-            }
-        }
-    }
-
 }
