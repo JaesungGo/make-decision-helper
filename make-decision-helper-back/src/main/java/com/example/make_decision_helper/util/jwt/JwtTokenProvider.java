@@ -18,6 +18,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +37,6 @@ public class JwtTokenProvider {
     private Long refreshTokenVal;
 
     private final RedisTemplate<String, String> redisTemplate;
-    private final CookieUtil cookieUtil;
 
     @PostConstruct
     protected void init() {
@@ -44,7 +44,7 @@ public class JwtTokenProvider {
     }
 
     /**
-     * AccessToken, RefreshToken 발급 및 쿠키에 담아 반환
+     * AccessToken, RefreshToken 발급 및 맵에 담아 반환
      * @param email
      * @param role
      * @return Cookie Map
@@ -78,8 +78,8 @@ public class JwtTokenProvider {
 
 
         Map<String, ResponseCookie> cookies =  new HashMap<>();
-        cookies.put("accessToken", cookieUtil.createCookie("accessToken",accessToken,accessTokenVal/1000));
-        cookies.put("refreshToken", cookieUtil.createCookie("refreshToken",refreshToken,refreshTokenVal/1000));
+        cookies.put("accessToken", CookieUtil.createCookie("accessToken",accessToken,accessTokenVal/1000));
+        cookies.put("refreshToken", CookieUtil.createCookie("refreshToken",refreshToken,refreshTokenVal/1000));
 
         return cookies;
     }
@@ -101,7 +101,7 @@ public class JwtTokenProvider {
                 log.info("AccessToken BlackList 추가 완료: {}", email);
             }
 
-            return cookieUtil.createLogoutCookie();
+            return CookieUtil.createLogoutCookie();
         } catch (Exception e) {
             log.error("토큰 처리 중 에러 발생: {}", e.getMessage());
             throw new RuntimeException("토큰 처리 중 오류가 발생했습니다.");
@@ -130,12 +130,7 @@ public class JwtTokenProvider {
      * @return 이메일
      */
     public String getEmailFromToken(String token){
-        return Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        return this.getClaims(token).getSubject();
     }
 
     /**
@@ -165,11 +160,7 @@ public class JwtTokenProvider {
         log.debug("토큰 Authentication 변환 시작");
 
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+            Claims claims = this.getClaims(token);
 
             String email = claims.getSubject();
             String roleString = claims.get("role",String.class);
@@ -201,11 +192,7 @@ public class JwtTokenProvider {
      * @return
      */
     private Long getExpirationFromToken(String token){
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(secretKey)
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = this.getClaims(token);
         return claims.getExpiration().getTime() - System.currentTimeMillis();
     }
 
@@ -218,5 +205,44 @@ public class JwtTokenProvider {
     public boolean isTokenBlacklisted(String token, String tokenType) {
         return Boolean.TRUE.equals(redisTemplate.hasKey("BlackList:" + tokenType + ":" + token));
     }
+
+    /**
+     * 웹소켓 인증에 필요한 게스트용 JWT 토큰 발급
+     * @param guestId
+     * @param roomId
+     * @param nickname
+     * @return
+     */
+    public String createGuestToken(String guestId, Long roomId, String nickname){
+        Claims claims = Jwts.claims().setSubject(guestId);
+        claims.put("roomId", roomId);
+        claims.put("nickname", nickname);
+        claims.put("role", UserRole.GUEST.name());
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + accessTokenVal);
+
+        return Jwts.builder()
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiration)
+                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .compact();
+    }
+
+    /**
+     * 토큰에서 claims 추출
+     * @param token
+     * @return
+     */
+    public Claims getClaims(String token){
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+
 
 }

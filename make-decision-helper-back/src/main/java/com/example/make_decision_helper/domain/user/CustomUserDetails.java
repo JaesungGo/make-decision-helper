@@ -34,7 +34,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;  // email을 username으로 사용
+        return email;
     }
 
     @Override

@@ -45,14 +45,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<Void>> login(@Valid @RequestBody LoginRequest request, @CookieValue(name = "guestToken", required = false) String guestToken) {
 
         try {
+
             Map<String, ResponseCookie> cookies = userService.login(request);
 
-            return ResponseEntity.ok()
+            ResponseEntity.BodyBuilder responseBuilder = ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookies.get("accessToken").toString())
-                    .header(HttpHeaders.SET_COOKIE, cookies.get("refreshToken").toString())
+                    .header(HttpHeaders.SET_COOKIE, cookies.get("refreshToken").toString());
+
+            if( guestToken != null){
+                ResponseCookie deleteGuestCookie = CookieUtil.deleteGuestCookie();
+                responseBuilder.header(HttpHeaders.SET_COOKIE, deleteGuestCookie.toString());
+            }
+
+            return responseBuilder
                     .body(ApiResponse.success(null,"로그인 성공"));
         } catch (Exception e){
             log.error("로그인 실패: {}", e.getMessage());
@@ -62,9 +70,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<Void>> logout(HttpServletRequest httpServletRequest ,String cookie) {
         try{
-            String token = cookieUtil.getCookieValue(request,"accessToken");
+            String token = CookieUtil.getCookieValue(httpServletRequest,"accessToken");
 
             if(token == null) {
                 return ResponseEntity.badRequest()
@@ -87,8 +95,8 @@ public class AuthController {
     }
 
     @PostMapping("/reissue")
-    public ResponseEntity<ApiResponse<Void>> reissue(HttpServletRequest request) {
-        String refreshToken = cookieUtil.getCookieValue(request, "refreshToken");
+    public ResponseEntity<ApiResponse<Void>> reissue(HttpServletRequest httpServletRequest) {
+        String refreshToken = CookieUtil.getCookieValue(httpServletRequest, "refreshToken");
 
         if (refreshToken == null) {
             return ResponseEntity.badRequest()

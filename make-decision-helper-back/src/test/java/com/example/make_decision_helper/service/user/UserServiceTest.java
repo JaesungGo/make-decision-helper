@@ -58,7 +58,6 @@ class UserServiceTest {
         user = User.builder()
                 .email(email)
                 .password(encodedPassword)
-                .nickname(nickname)
                 .role(UserRole.USER)
                 .build();
     }
