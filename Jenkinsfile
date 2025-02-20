@@ -15,6 +15,7 @@ pipeline {
                    sh '''
                        chmod +x gradlew
                        ./gradlew clean bootJar -x test
+                       cp build/libs/*.jar app.jar
                    '''
                }
            }
@@ -34,10 +35,10 @@ pipeline {
                sh "${DOCKER_COMPOSE} build"
            }
        }
+
        stage('Deploy') {
            steps {
-               sh "${DOCKER_COMPOSE} down || true"
-               sh "${DOCKER_COMPOSE} up -d"
+                sh "${DOCKER_COMPOSE} up -d --build"
            }
        }
    }

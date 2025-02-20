@@ -14,8 +14,19 @@ dist-ssr
 coverage
 *.local
 
+application.properties
+
+
 /cypress/videos/
 /cypress/screenshots/
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
 
 # Editor directories and files
 .vscode/*
