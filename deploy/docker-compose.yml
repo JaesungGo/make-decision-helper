@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  jenkins:
+    image: make-decision-helper-jenkins
+    container_name: jenkins
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TZ=Asia/Seoul
+    restart: always
+    networks:
+      - app-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: always
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+volumes:
+  jenkins-data:
+  mongo-data:
+
+networks:
+  app-network:
+    driver: bridge

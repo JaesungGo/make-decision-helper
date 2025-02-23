@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    image: make-decision-helper-backend:green
+    container_name: make-decision-helper-backend-green
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_PROFILES_ACTIVE=green
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mongodb
+      - redis
+    restart: always
+
+  frontend:
+    image: make-decision-helper-frontend:green
+    container_name: make-decision-helper-frontend-green
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    restart: always
+
+  nginx:
+    image: make-decision-helper-nginx
+    container_name: make-decision-helper-nginx
+    build:
+      context: ../nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+    restart: always

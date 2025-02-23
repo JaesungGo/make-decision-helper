@@ -1,0 +1,45 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Backend Build') {
+            steps {
+                dir('backend') {
+                    sh './gradlew clean build'
+                }
+            }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm ci'
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    def blueRunning = sh(
+                        script: "docker ps -q -f name=make-decision-helper-backend-blue",
+                        returnStdout: true
+                    ).trim()
+
+                    def deployColor = blueRunning ? 'green' : 'blue'
+                    def currentColor = blueRunning ? 'blue' : 'green'
+
+                    // 새로운 버전 배포
+                    sh "docker-compose -f docker-compose.${deployColor}.yml up -d --build"
+
+                    // 헬스체크 대기
+                    sleep(30)
+
+                    // 이전 버전 종료
+                    sh "docker-compose -f docker-compose.${currentColor}.yml down"
+                }
+            }
+        }
+    }
+}
