@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 
 # 네트워크 생성 (없는 경우)
@@ -8,7 +6,7 @@ docker network create app-network || true
 BLUE_RUNNING=$(docker ps -q -f "name=make-decision-helper-backend-blue")
 
 if [ -n "$BLUE_RUNNING" ]; then
-    echo "🟢 Blue (현재 운영 중) → Green으로 전환 시작..."
+    echo "🔵 Blue (현재 운영 중) → Green으로 전환 시작..."
 
     # Green 버전 실행
     docker-compose -f docker-compose.yml -f docker-compose.green.yml up -d --build

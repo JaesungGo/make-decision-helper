@@ -5,7 +5,7 @@ echo "EC2 배포 환경 구성 시작"
 
 # 1. 필수 패키지 설치
 sudo apt update
-sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
+sudo apt install -y apt-transport-https ca-certificates curl software-properties-common git
 
 # 2. Docker 설치
 if ! command -v docker &> /dev/null; then
@@ -30,14 +30,23 @@ else
     echo "Docker Compose가 이미 설치되어 있습니다."
 fi
 
-# 4. 프로젝트 디렉토리 구성
-mkdir -p jenkins nginx make-decision-helper-back make-decision-helper-front deploy
+# 4. Docker 서비스 자동 시작 설정
+sudo systemctl enable docker
+sudo systemctl start docker
 
-# 5. Docker 네트워크 생성
+# 5. 방화벽 설정
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 9090/tcp
+sudo ufw allow 8080/tcp
+sudo ufw allow 8081/tcp
+sudo ufw allow 3000/tcp
+sudo ufw allow 3001/tcp
+sudo ufw allow 27017/tcp
+sudo ufw allow 6379/tcp
+
+# 6. 네트워크 생성
 docker network create app-network || true
-
-# 6. 권한 설정
-chmod +x start-jenkins.sh
 
 echo "설치 완료! 다음 단계를 진행하세요:"
 echo "1. 소스 코드를 각 디렉토리에 복사하세요."

@@ -18,18 +18,53 @@ pipeline {
             }
         }
 
+        stage('Backend Build') {
+            steps {
+                sh '''
+                cd $WORKSPACE/make-decision-helper-back
+                # 백엔드 빌드 로직
+                # 예: Gradle 또는 Maven 빌드
+                if [ -f "./gradlew" ]; then
+                    chmod +x ./gradlew
+                    ./gradlew clean bootJar -x test
+                elif [ -f "./mvnw" ]; then
+                    chmod +x ./mvnw
+                    ./mvnw clean package -DskipTests
+                else
+                    echo "지원되는 빌드 도구를 찾을 수 없습니다."
+                fi
+                '''
+            }
+        }
+
+        stage('Frontend Build') {
+            steps {
+                sh '''
+                cd $WORKSPACE/make-decision-helper-front
+                # 프론트엔드 빌드 로직
+                # 예: npm 또는, yarn 빌드
+                if [ -f "package.json" ]; then
+                    npm ci || npm install
+                    npm run build
+                else
+                    echo "package.json을 찾을 수 없습니다."
+                fi
+                '''
+            }
+        }
+
         stage('Deploy Database Services') {
             steps {
                 sh '''
                 cd $WORKSPACE/deploy
                 docker network create app-network || true
 
-                # 현재 실행 중인 서비스 확인
-                BLUE_RUNNING=$(docker ps -q -f "name=make-decision-helper-backend-blue")
-                GREEN_RUNNING=$(docker ps -q -f "name=make-decision-helper-backend-green")
-
-                # DB 서비스 실행
+                # 데이터베이스 서비스 실행
                 docker-compose -f docker-compose.yml up -d mongodb redis
+
+                # 데이터베이스 서비스 시작 대기
+                echo "데이터베이스 서비스 시작 대기..."
+                sleep 10
                 '''
             }
         }
@@ -55,7 +90,6 @@ pipeline {
                 docker-compose -f docker-compose.yml -f docker-compose.$DEPLOY_ENV.yml up -d --build
 
                 # 헬스 체크
-                HEALTH_PORT=$DEPLOY_ENV
                 if [ "$DEPLOY_ENV" = "blue" ]; then
                     HEALTH_PORT="8080"
                 else
@@ -127,11 +161,15 @@ pipeline {
 
                 # 마지막으로 배포된 환경 확인
                 BLUE_RUNNING=$(docker ps -q -f "name=make-decision-helper-backend-blue")
+                GREEN_RUNNING=$(docker ps -q -f "name=make-decision-helper-backend-green")
 
+                # 최근에 시작된 환경이 있다면 정리
                 if [ -n "$BLUE_RUNNING" ]; then
                     echo "실패한 Blue 환경을 정리합니다."
                     docker-compose -f docker-compose.blue.yml down
-                else
+                fi
+
+                if [ -n "$GREEN_RUNNING" ]; then
                     echo "실패한 Green 환경을 정리합니다."
                     docker-compose -f docker-compose.green.yml down
                 fi

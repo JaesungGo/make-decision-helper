@@ -5,22 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cbbfb36e-3d96-4a1a-909d-37a9b849279e" name="Changes" comment="Chore: Blue-Green 무중단 배포 아키텍쳐">
-      <change afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy-manual.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy/.env.blue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/deploy/.env.green" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/install.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/jenkins-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start-jenkins.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/shutdown.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Jenkinsfile" beforeDir="false" afterPath="$PROJECT_DIR$/Jenkinsfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy-manual.sh" beforeDir="false" afterPath="$PROJECT_DIR$/deploy-manual.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deploy/.env" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy/.env.blue" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/.env.blue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deploy/.env.green" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/.env.green" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deploy/docker-compose.blue.yml" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/docker-compose.blue.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deploy/docker-compose.green.yml" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/docker-compose.green.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deploy/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/docker-compose.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/deploy/switch_blue_green.sh" beforeDir="false" afterPath="$PROJECT_DIR$/deploy/switch_blue_green.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/install.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/jenkins/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/jenkins/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jenkins/Jenkinsfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-back/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-back/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/make-decision-helper-front/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/make-decision-helper-front/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/nginx/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/nginx/nginx.conf" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/start-jenkins.sh" beforeDir="false" afterPath="$PROJECT_DIR$/start-jenkins.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,7 +110,7 @@
       <workItem from="1739862473812" duration="1571000" />
       <workItem from="1740375125218" duration="6969000" />
       <workItem from="1740392602183" duration="6821000" />
-      <workItem from="1740449280568" duration="2075000" />
+      <workItem from="1740449280568" duration="4443000" />
     </task>
     <task id="LOCAL-00001" summary="Chore: 도커,젠킨스 설정파일 추가">
       <option name="closed" value="true" />
@@ -135,7 +136,15 @@
       <option name="project" value="LOCAL" />
       <updated>1737015905330</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Chore: Blue-Green 무중단 배포 아키텍쳐">
+      <option name="closed" value="true" />
+      <created>1740464440361</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1740464440361</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,6 +164,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Chore: 도커,젠킨스 설정파일 추가" />
     <MESSAGE value="Chore: 프론트 프로젝트 초기화" />
-    <option name="LAST_COMMIT_MESSAGE" value="Chore: 프론트 프로젝트 초기화" />
+    <MESSAGE value="Chore: Blue-Green 무중단 배포 아키텍쳐" />
+    <option name="LAST_COMMIT_MESSAGE" value="Chore: Blue-Green 무중단 배포 아키텍쳐" />
   </component>
 </project>

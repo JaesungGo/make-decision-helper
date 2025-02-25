@@ -4,7 +4,7 @@
 
 # 스크립트 실행 디렉토리를 기준으로 경로 설정
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-cd "$SCRIPT_DIR/deploy"
+cd "$SCRIPT_DIR"
 
 # 네트워크 생성 (없는 경우)
 docker network create app-network || true
@@ -26,11 +26,14 @@ REDIS_RUNNING=$(docker ps -q -f "name=redis")
 
 if [ -z "$MONGODB_RUNNING" ] || [ -z "$REDIS_RUNNING" ]; then
     echo "📦 데이터베이스 서비스를 시작합니다..."
+    cd deploy
     docker-compose -f docker-compose.yml up -d
+    cd ..
 fi
 
 # 애플리케이션 서비스 배포
 echo "🚀 $DEPLOY_ENV 환경을 배포합니다..."
+cd deploy
 docker-compose -f docker-compose.yml -f docker-compose.$DEPLOY_ENV.yml up -d --build
 
 # 헬스 체크
