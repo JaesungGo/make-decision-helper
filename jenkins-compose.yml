@@ -1,0 +1,29 @@
+version: '3'
+services:
+  jenkins:
+    image: make-decision-helper-jenkins
+    container_name: jenkins
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    user: root
+    ports:
+      - "9090:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+      - ./:/workspace
+    environment:
+      - TZ=Asia/Seoul
+    restart: always
+    networks:
+      - app-network
+
+volumes:
+  jenkins-data:
+
+networks:
+  app-network:
+    external: true

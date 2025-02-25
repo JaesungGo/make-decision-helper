@@ -5,31 +5,35 @@ services:
     image: make-decision-helper-backend:blue
     container_name: make-decision-helper-backend-blue
     build:
-      context: ../backend
+      context: ../make-decision-helper-back
       dockerfile: Dockerfile
-    environment:
-      - SPRING_PROFILES_ACTIVE=blue
+    env_file:
+      - .env.blue
     ports:
       - "8080:8080"
     depends_on:
       - mongodb
       - redis
     restart: always
+    networks:
+      - app-network
 
   frontend:
     image: make-decision-helper-frontend:blue
     container_name: make-decision-helper-frontend-blue
     build:
-      context: ../frontend
+      context: ../make-decision-helper-front
       dockerfile: Dockerfile
     ports:
       - "3000:80"
     depends_on:
       - backend
     restart: always
+    networks:
+      - app-network
 
   nginx:
-    image: make-decision-helper-nginx
+    image: make-decision-helper-nginx:blue
     container_name: make-decision-helper-nginx
     build:
       context: ../nginx
@@ -39,3 +43,5 @@ services:
     depends_on:
       - frontend
     restart: always
+    networks:
+      - app-network
