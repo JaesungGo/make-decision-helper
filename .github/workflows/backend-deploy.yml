@@ -1,0 +1,75 @@
+name: Deploy Spring Boot Backend
+
+on:
+  push:
+    branches: [ main ]
+    paths: 
+      - 'make-decision-helper-back/**'
+      - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: ${{ secrets.AZURE_WEBAPP_NAME }}
+  JAVA_VERSION: '17'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 🔄 Checkout code
+      uses: actions/checkout@v4
+
+    - name: ☕ Set up Java ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+
+    - name: 📦 Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('make-decision-helper-back/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-m2-
+
+    - name: 🔨 Build Spring Boot application
+      run: |
+        cd make-decision-helper-back
+        mvn clean package -DskipTests -Dspring.profiles.active=azure
+
+    - name: 📋 Verify build output
+      run: |
+        echo "Build artifacts:"
+        ls -la make-decision-helper-back/target/
+
+    - name: 🔐 Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: 🚀 Deploy to Azure App Service
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+        package: './make-decision-helper-back/target/*.jar'
+
+    - name: ⚙️ Configure App Settings
+      run: |
+        az webapp config appsettings set \
+          --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+          --name ${{ env.AZURE_WEBAPP_NAME }} \
+          --settings \
+            SPRING_PROFILES_ACTIVE="azure" \
+            MYSQL_HOST="${{ secrets.MYSQL_HOST }}" \
+            MYSQL_USERNAME="${{ secrets.MYSQL_USERNAME }}" \
+            MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}" \
+            MYSQL_DATABASE="${{ secrets.MYSQL_DATABASE }}" \
+            WEBSITES_PORT="8080"
+
+    - name: 🏥 Health check
+      run: |
+        sleep 30
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/actuator/health || echo "Health check endpoint not available"

@@ -11,6 +11,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 @Aspect
@@ -19,7 +20,6 @@ import java.util.stream.Stream;
 public class LoggingAspect {
 
     private final ObjectMapper objectMapper;
-
     public LoggingAspect(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
