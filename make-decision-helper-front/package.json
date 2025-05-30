@@ -5,10 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --mode production",
+    "build:dev": "vite build --mode development", 
     "preview": "vite preview",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "clean": "rm -rf dist node_modules/.vite"
   },
   "dependencies": {
     "@fullcalendar/daygrid": "^6.1.15",
@@ -34,6 +36,11 @@
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.17",
     "vite": "^6.0.5",
-    "vite-plugin-vue-devtools": "^7.6.8"
+    "vite-plugin-vue-devtools": "^7.6.8",
+    "terser": "^5.19.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }
