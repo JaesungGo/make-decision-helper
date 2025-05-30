@@ -21,18 +21,18 @@ export default defineConfig(({ mode }) => {
       global: 'window'
     },
     
-    // 개발 서버 설정
+    // 개발 서버 설정 - proxy로 /api 요청을 백엔드로 전달
     server: {
       proxy: {
         '/api': {
           target: env.VITE_APP_API_URL || 'http://localhost:8080',
           changeOrigin: true,
-          secure: true
+          secure: true,
+          // /api 경로를 그대로 유지 (rewrite 하지 않음)
         }
       }
     },
 
-    // 빌드 설정
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
