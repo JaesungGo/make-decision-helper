@@ -9,12 +9,12 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [
       vue(),
-      // 개발환경에서만 devtools 활성화
       ...(mode === 'development' ? [vueDevTools()] : []),
     ],
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        'vue': 'vue/dist/vue.esm-bundler.js'
       },
     },
     define: {

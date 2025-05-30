@@ -67,7 +67,7 @@ public class SecurityConfig {
         // 환경별 허용 도메인 설정
         List<String> allowedOrigins = new ArrayList<>();
         allowedOrigins.add("http://localhost:3000"); // 개발환경
-        allowedOrigins.add("https://brave-sand-04ec3de00.6.azurestaticapps.net"); // 프로덕션
+        allowedOrigins.add("https://blue-mud-09b555900.6.azurestaticapps.net"); // 프로덕션
 
         // 추가 도메인이 있다면 여기에 추가
         String additionalOrigins = System.getenv("ADDITIONAL_CORS_ORIGINS");
@@ -83,7 +83,6 @@ public class SecurityConfig {
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
-        // WebSocket 경로도 포함
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
         source.registerCorsConfiguration("/ws/**", configuration);
