@@ -2,7 +2,7 @@ name: Deploy Spring Boot Backend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
     paths: 
       - 'make-decision-helper-back/**'
       - '.github/workflows/backend-deploy.yml'
@@ -26,23 +26,25 @@ jobs:
         java-version: ${{ env.JAVA_VERSION }}
         distribution: 'temurin'
 
-    - name: 📦 Cache Maven dependencies
+    - name: 📦 Cache Gradle dependencies
       uses: actions/cache@v3
       with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('make-decision-helper-back/pom.xml') }}
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('make-decision-helper-back/**/*.gradle*', 'make-decision-helper-back/**/gradle-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-m2-
+          ${{ runner.os }}-gradle-
 
     - name: 🔨 Build Spring Boot application
       run: |
         cd make-decision-helper-back
-        mvn clean package -DskipTests -Dspring.profiles.active=azure
+        ./gradlew clean build -x test -Dspring.profiles.active=azure
 
     - name: 📋 Verify build output
       run: |
         echo "Build artifacts:"
-        ls -la make-decision-helper-back/target/
+        ls -la make-decision-helper-back/build/libs/
 
     - name: 🔐 Login to Azure
       uses: azure/login@v1
@@ -54,7 +56,7 @@ jobs:
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
-        package: './make-decision-helper-back/target/*.jar'
+        package: './make-decision-helper-back/build/libs/*.jar'
 
     - name: ⚙️ Configure App Settings
       run: |
