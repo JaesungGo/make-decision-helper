@@ -39,6 +39,7 @@ jobs:
     - name: 🔨 Build Spring Boot application
       run: |
         cd make-decision-helper-back
+        chmod +x ./gradlew
         ./gradlew clean build -x test -Dspring.profiles.active=azure
 
     - name: 📋 Verify build output
