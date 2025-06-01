@@ -21,14 +21,31 @@ export default defineConfig(({ mode }) => {
       global: 'window'
     },
     
-    // 개발 서버 설정 - proxy로 /api 요청을 백엔드로 전달
+    // 개발 서버 설정 - API와 WebSocket 모두 프록시 처리
     server: {
       proxy: {
         '/api': {
           target: env.VITE_APP_API_URL || 'http://localhost:8080',
           changeOrigin: true,
-          secure: true,
-          // /api 경로를 그대로 유지 (rewrite 하지 않음)
+          secure: false,  // 개발환경에서는 false
+          ws: true,       // WebSocket 프록시 활성화
+          configure: (proxy, _options) => {
+            proxy.on('error', (err, _req, _res) => {
+              console.log('proxy error', err);
+            });
+            proxy.on('proxyReq', (proxyReq, req, _res) => {
+              console.log('Sending Request to the Target:', req.method, req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, _res) => {
+              console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+            });
+          },
+        },
+        '/ws-stomp': {
+          target: env.VITE_APP_API_URL || 'http://localhost:8080',
+          changeOrigin: true,
+          secure: false,
+          ws: true,
         }
       }
     },

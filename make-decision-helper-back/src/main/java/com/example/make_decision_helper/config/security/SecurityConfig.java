@@ -66,7 +66,7 @@ public class SecurityConfig {
 
         // 환경별 허용 도메인 설정
         List<String> allowedOrigins = new ArrayList<>();
-        allowedOrigins.add("http://localhost:4173"); // 개발환경
+        allowedOrigins.add("http://localhost:5173"); // 개발환경
         allowedOrigins.add("https://blue-mud-09b555900.6.azurestaticapps.net"); // 프로덕션
 
         // 추가 도메인이 있다면 여기에 추가
@@ -85,7 +85,7 @@ public class SecurityConfig {
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
-        source.registerCorsConfiguration("/ws/**", configuration);
+        source.registerCorsConfiguration("/ws-stomp/**", configuration);
 
         return source;
     }

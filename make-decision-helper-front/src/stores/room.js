@@ -1,19 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import axios from '@/plugins/axios'
+import { api } from '@/api'
 
 export const useRoomStore = defineStore('room', () => {
   const currentRoom = ref(null)
 
   const createRoom = async (params) => {
     try {
-      const response = await axios.post('/api/v1/rooms', {
-        roomName: params.roomName,
-        maxParticipants: params.maxParticipants,
-        duration: params.durationHours,
-        nickname: params.nickname
-      })
-
+      const response = await api.room.create(params)
       currentRoom.value = response.data.data
       return { success: true, data: response.data.data }
     } catch (error) {
@@ -26,9 +20,7 @@ export const useRoomStore = defineStore('room', () => {
 
   const joinRoom = async (roomId, nickname) => {
     try {
-      const response = await axios.post(`/api/v1/chat/rooms/${roomId}/join`, {
-        nickname
-      })
+      const response = await api.room.join(roomId, nickname)
       return { success: true, data: response.data.data }
     } catch (error) {
       return {
@@ -40,7 +32,7 @@ export const useRoomStore = defineStore('room', () => {
 
   const getRoomInfo = async (roomId) => {
     try {
-      const response = await axios.get(`/api/v1/rooms/${roomId}`)
+      const response = await api.room.getInfo(roomId)
       currentRoom.value = response.data.data
       return { success: true, data: response.data.data }
     } catch (error) {
@@ -53,12 +45,7 @@ export const useRoomStore = defineStore('room', () => {
 
   const getRoomByInviteCode = async (params) => {
     try {
-      const response = await axios.post('/api/v1/rooms/join',{
-        inviteCode : params.inviteCode,
-        nickname: params.nickname
-      }
-
-      )
+      const response = await api.room.join(params.inviteCode, params.nickname)
       return { success: true, data: response.data.data }
     } catch (error) {
       return {
@@ -70,7 +57,7 @@ export const useRoomStore = defineStore('room', () => {
 
   const leaveRoom = async (roomId) => {
     try {
-      await axios.delete(`/api/v1/rooms/${roomId}/leave`)
+      await api.room.leave(roomId)
       currentRoom.value = null
       return { success: true }
     } catch (error) {
@@ -83,7 +70,7 @@ export const useRoomStore = defineStore('room', () => {
 
   const getMyRooms = async () => {
     try {
-      const response = await axios.get('/api/v1/rooms/my-rooms')
+      const response = await api.room.getMyRooms()
       return { success: true, data: response.data.data }
     } catch (error) {
       return {

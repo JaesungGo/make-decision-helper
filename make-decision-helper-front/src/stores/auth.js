@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import axios from '@/plugins/axios'
+import { api } from '@/api'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -8,14 +8,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/v1/auth/login', {
-        email,
-        password
-      })
-
+      const response = await api.auth.login(email, password)
       user.value = response.data
       isAuthenticated.value = true
-
       return { success: true }
     } catch (error) {
       return {
@@ -27,10 +22,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const signup = async (email, password) => {
     try {
-      const response = await axios.post('/api/v1/auth/signup', {
-        email,
-        password
-      })
+      await api.auth.signup(email, password)
       return { success: true }
     } catch (error) {
       return {
@@ -42,12 +34,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const logout = async () => {
     try {
-      await axios.post('/api/v1/auth/logout')
-
-      // 로그아웃 시 상태 초기화
+      await api.auth.logout()
       user.value = null
       isAuthenticated.value = false
-
       return { success: true }
     } catch (error) {
       return {
@@ -59,18 +48,16 @@ export const useAuthStore = defineStore('auth', () => {
 
   const checkAuth = async () => {
     try {
-      const response = await axios.get('/api/v1/auth/me')
+      const response = await api.auth.me()
       user.value = response.data
       isAuthenticated.value = true
       return true
     } catch (error) {
-      // 인증 실패 시 토큰 재발급 시도
       if (error.response?.data?.message === "유저 인증에 실패했습니다.") {
         try {
           const reissueResult = await reissueToken()
           if (reissueResult.success) {
-            // 토큰 재발급 성공 시 다시 한 번 인증 체크
-            const retryResponse = await axios.get('/api/v1/auth/me')
+            const retryResponse = await api.auth.me()
             user.value = retryResponse.data
             isAuthenticated.value = true
             return true
@@ -79,8 +66,6 @@ export const useAuthStore = defineStore('auth', () => {
           console.error('토큰 재발급 실패:', reissueError)
         }
       }
-
-      // 모든 시도 실패 시
       user.value = null
       isAuthenticated.value = false
       return false
@@ -89,10 +74,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const reissueToken = async () => {
     try {
-      await axios.post('/api/v1/auth/reissue')
+      await api.auth.reissue()
       return { success: true }
     } catch (error) {
-      // 토큰 재발급 실패 시 로그아웃 처리
       user.value = null
       isAuthenticated.value = false
       return {
@@ -104,10 +88,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const joinAsGuest = async (inviteCode, nickname) => {
     try {
-      const response = await axios.post('/api/v1/guest/rooms/join', {
-        inviteCode,
-        nickname
-      })
+      const response = await api.guest.join(inviteCode, nickname)
       return { success: true, data: response.data }
     } catch (error) {
       return {
@@ -120,7 +101,7 @@ export const useAuthStore = defineStore('auth', () => {
   const checkGuestAuth = async (roomId) => {
     try {
       console.log('Checking guest auth for room:', roomId)
-      const response = await axios.get(`/api/v1/guest/rooms/${roomId}`)
+      const response = await api.guest.getRoom(roomId)
       console.log('Guest auth response:', response)
       isAuthenticated.value = false
       user.value = null

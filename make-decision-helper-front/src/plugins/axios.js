@@ -8,14 +8,14 @@ const IS_DEV = import.meta.env.DEV
 const getBaseURL = () => {
   console.log('🔍 환경변수 확인:', { API_URL, IS_DEV })
   
-  // 개발환경: proxy 사용하므로 baseURL을 빈 문자열로 (proxy가 /api를 처리)
+  // 개발환경: proxy 사용
   if (IS_DEV) {
-    return ''  // 개발환경에서는 빈 문자열
+    return ''  // 개발환경에서는 빈 문자열 (proxy가 처리)
   }
   
   // 프로덕션환경: 전체 URL 필요
   if (API_URL && API_URL !== 'undefined') {
-    return API_URL  // 백엔드 URL만 (auth.js에서 /api를 붙임)
+    return API_URL
   }
   
   // fallback
@@ -34,8 +34,14 @@ const axiosInstance = axios.create({
   }
 })
 
+// 요청 인터셉터 - 일관된 API 경로 처리
 axiosInstance.interceptors.request.use(
   (config) => {
+    // /v1으로 시작하는 모든 URL을 /api/v1으로 변환
+    if (config.url && config.url.startsWith('/v1/')) {
+      config.url = '/api' + config.url
+    }
+    
     console.log('🔗 API 요청 URL:', (config.baseURL || '') + config.url)
     console.log('🌍 환경 정보:', {
       개발환경: IS_DEV,
@@ -48,21 +54,25 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+// 응답 인터셉터
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     console.error('❌ API 응답 오류:', error.response?.status, error.response?.data)
     
     if (error.response?.status === 401) {
+      // 게스트 요청인 경우 바로 로그인 페이지로
       if (error.config.url.includes('/api/v1/guest/')) {
         window.location.href = '/login'
         return Promise.reject(error)
       }
 
+      // 토큰 재발급 시도
       try {
-        await axiosInstance.post('/api/v1/auth/reissue')
+        await axiosInstance.post('/v1/auth/reissue')  // 자동으로 /api/v1/auth/reissue로 변환됨
         return axiosInstance(error.config)
-      } catch {
+      } catch (reissueError) {
+        console.error('토큰 재발급 실패:', reissueError)
         window.location.href = '/login'
       }
     }
